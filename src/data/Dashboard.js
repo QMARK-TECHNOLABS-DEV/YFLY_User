@@ -32,12 +32,12 @@ export const FormData = [
         placeholder: "Date Of Birth",
         type: "date"
     },
-    {
-        id: 6,
-        name: "qualification",
-        placeholder: "Qualification",
-        type: "text"
-    },
+    // {
+    //     id: 6,
+    //     name: "qualification",
+    //     placeholder: "Qualification",
+    //     type: "text"
+    // },
     {
         id: 7,
         name: "enquiryRoute",
