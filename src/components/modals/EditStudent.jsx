@@ -4,7 +4,7 @@ import { IoClose } from "react-icons/io5";
 
 import Input from "../formField/Input";
 
-import { updateStudentRoute } from "../../utils/Endpoint";
+import { getEmployeesRoute, updateStudentRoute } from "../../utils/Endpoint";
 import { toast } from "react-toastify";
 import ReqLoader from "../loading/ReqLoader";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
@@ -61,6 +61,23 @@ const EditStudent = ({ entityData, setData, getTableData, setModal }) => {
     }
   };
 
+  const [employeeData, setEmployeeData] = useState([]);
+
+  const getEmployeeData = async () => {
+    try {
+      const result = await axios.get(`${getEmployeesRoute}?department=counselling`);
+      if (result.status === 200) {
+        setEmployeeData(result?.data);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getEmployeeData();
+  }, []);
+
   console.log("efd", stdFormData);
   return (
     <div className="fixed top-0 left-0 w-full h-screen overflow-auto bg-black/50 flex items-center justify-center z-50">
@@ -113,7 +130,8 @@ const EditStudent = ({ entityData, setData, getTableData, setModal }) => {
                         placeholder="New Password"
                       />
                     </div>
-                    <div className="w-full md:w-1/2 p-1 py-2">
+
+                    {/* <div className="w-full md:w-1/2 p-1 py-2">
                       <Input
                         name="qualification"
                         type="text"
@@ -121,7 +139,8 @@ const EditStudent = ({ entityData, setData, getTableData, setModal }) => {
                         value={stdFormData?.qualification}
                         placeholder="Qualification"
                       />
-                    </div>
+                    </div> */}
+
                     <div className="w-full md:w-1/2 p-1 py-2">
                       <Input
                         name="birthDate"
@@ -141,7 +160,7 @@ const EditStudent = ({ entityData, setData, getTableData, setModal }) => {
                       />
                     </div>
 
-                    <div className="flex w-full gap-2">
+                    <div className="w-full md:w-1/2 p-1 py-2">
                       <select
                         value={stdFormData?.office}
                         className={`border border-primary_colors/50 text-gray-400 text-xs p-3 focus:outline-none w-full rounded-lg`}
@@ -159,6 +178,26 @@ const EditStudent = ({ entityData, setData, getTableData, setModal }) => {
                         ))}
                       </select>
                     </div>
+
+                    <div className="w-full md:w-1/2 p-1 py-2">
+                      <select
+                        value={stdFormData?.assigneeId}
+                        className={`border border-primary_colors/50 text-gray-400 text-xs p-3 focus:outline-none w-full rounded-lg`}
+                        name="assigneeId"
+                        id=""
+                        onChange={changeHandler}
+                      >
+                        <option className="" value="">
+                          Select a Counsellor
+                        </option>
+                        { employeeData.map((items, index) => (
+                          <option key={index} className="" value={items?._id}>
+                            {items?.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
                   </>
                 }
 

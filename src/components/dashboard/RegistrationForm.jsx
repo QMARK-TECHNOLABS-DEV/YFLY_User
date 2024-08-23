@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Address, EmpFormData, FormData, Office } from "../../data/Dashboard";
 import { IoClose } from "react-icons/io5";
 
@@ -6,6 +6,7 @@ import Input from "../formField/Input";
 
 import {
   employeeRegisterRoute,
+  getEmployeesRoute,
   studentRegisterRoute,
 } from "../../utils/Endpoint";
 import { toast } from "react-toastify";
@@ -17,6 +18,7 @@ const RegistrationForm = ({ setModal, entity }) => {
   const axios = useAxiosPrivate();
 
   const [loader, setLoader] = useState(false);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -27,6 +29,7 @@ const RegistrationForm = ({ setModal, entity }) => {
     image: "",
     qualification: "",
     office: "",
+    assignee: "",
     enquiryRoute:"",
     address: {
       houseName: "",
@@ -134,6 +137,25 @@ const RegistrationForm = ({ setModal, entity }) => {
     }
   };
 
+  const [employeeData, setEmployeeData] = useState([]);
+
+  const getEmployeeData = async () => {
+    try {
+      const result = await axios.get(`${getEmployeesRoute}?department=counselling`);
+      if (result.status === 200) {
+        setEmployeeData(result?.data);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    if(entity === "Student"){
+      getEmployeeData();
+    }
+  }, [entity]);
+
   return (
     <div className="fixed top-0 left-0 w-full h-screen overflow-auto bg-black/50 flex items-center justify-center z-50">
       <div className="relative bg-white mt-60  md:mt-0 md:w-1/2 rounded-lg p-5  md:p-10 md:px-14 m-5">
@@ -161,6 +183,8 @@ const RegistrationForm = ({ setModal, entity }) => {
                     </div>
                   ))}
                 {entity === "Student" && (
+                  <>
+                  <div className="w-full md:w-1/2 p-1 py-2">
                   <select
                     className={`border border-primary_colors/50 text-gray-400 text-xs p-3 focus:outline-none w-full rounded-lg`}
                     name="office"
@@ -168,7 +192,7 @@ const RegistrationForm = ({ setModal, entity }) => {
                     onChange={changeHandler}
                   >
                     <option className="" value="">
-                      Select A office
+                      Select an Office
                     </option>
                     {Office.map((items, index) => (
                       <option key={index} className="" value={items?.name}>
@@ -176,6 +200,28 @@ const RegistrationForm = ({ setModal, entity }) => {
                       </option>
                     ))}
                   </select>
+
+                  </div>
+
+                  <div className="w-full md:w-1/2 p-1 py-2">
+                  <select
+                    className={`border border-primary_colors/50 text-gray-400 text-xs p-3 focus:outline-none w-full rounded-lg`}
+                    name="assignee"
+                    id=""
+                    onChange={changeHandler}
+                  >
+                    <option className="" value="">
+                      Select a Counsellor
+                    </option>
+                    {employeeData.map((items, index) => (
+                      <option key={index} className="" value={items?._id}>
+                        {items?.name}
+                      </option>
+                    ))}
+                  </select>
+
+                  </div>
+                  </>
                 )}
 
                 {entity === "Employee" &&
@@ -199,7 +245,7 @@ const RegistrationForm = ({ setModal, entity }) => {
                       onChange={changeHandler}
                     >
                       <option className="" value="">
-                        Select A Department
+                        Select a Department
                       </option>
                       {EmployeeCards.map((items, index) => (
                         <option key={index} className="" value={items?.path}>
@@ -214,7 +260,7 @@ const RegistrationForm = ({ setModal, entity }) => {
                       onChange={changeHandler}
                     >
                       <option className="" value="">
-                        Select A office
+                        Select an Office
                       </option>
                       {Office.map((items, index) => (
                         <option key={index} className="" value={items?.name}>
@@ -245,29 +291,7 @@ const RegistrationForm = ({ setModal, entity }) => {
 
             {/* BUTTON */}
             <div className="text-white text-normal space-x-3 flex items-center justify-end mt-10">
-              {/* {currentStep > 1 && !complete && (
-                <button
-                  type="button"
-                  className="bg-primary_colors p-2 px-5 rounded-lg hover:scale-105 ease-in-out duration-200"
-                  onClick={() => setCurrentStep((prev) => prev - 1)}
-                >
-                  Back
-                </button>
-              )}
-              {!complete && (
-                <button
-                  type="button"
-                  className="bg-primary_colors p-2 px-5 rounded-lg hover:scale-105 ease-in-out duration-200"
-                  onClick={() => {
-                    currentStep === steps.length
-                      ? setComplete(true)
-                      : setCurrentStep((prev) => prev + 1);
-                  }}
-                >
-                  {currentStep === steps.length ? "Finish" : "Next"}
-                </button>
-              )} */}
-              {/* {complete && ( */}
+              
               <button
                 type="submit"
                 className="bg-primary_colors p-2 px-5 rounded-lg hover:scale-105 ease-in-out duration-200"

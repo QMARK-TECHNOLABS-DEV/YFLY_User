@@ -40,7 +40,7 @@ const StudentTable = ({ data , getData , page , entries}) => {
             <th className="px-3 py-4">Name</th>
             <th className="px-3 py-4">Email</th>
             <th className="px-3 py-4">Phone</th>
-            <th className="px-3 py-4">Qualification</th>
+            <th className="px-3 py-4">Counsellor</th>
             <th className="px-3 py-4">Enquiry Route</th>
             {/* <th className="px-3 py-4">application Id</th> */}
             {user?.role === "admin" && <th className="px-3 py-4 text-center">Actions</th>}
@@ -58,7 +58,7 @@ const StudentTable = ({ data , getData , page , entries}) => {
                 <td className="px-3 py-4">{items?.email ? items?.email : "NIL"}</td>
                 <td className="px-3 py-4">{items?.phone ? items?.phone : "NIL" }</td>
                 <td className="px-3 py-4 capitalize">
-                  {items?.qualification ? items?.qualification : "NIL"}
+                  {items?.assigneeName ? items?.assigneeName : "NIL"}
                 </td>
                 <td className="px-3 py-4">{items?.enquiryRoute ? items?.enquiryRoute : "NIL" }</td>
                 
