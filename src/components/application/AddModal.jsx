@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { IoClose } from "react-icons/io5";
 import {
   createApplicationRoute,
-  getAllStudent,
   getEmployeesRoute,
+  getNamesOfStudentsRoute,
 } from "../../utils/Endpoint";
 import { Intake, countries } from "../../data/Dashboard";
 import { useSelector } from "react-redux";
@@ -122,9 +122,9 @@ const AddModal = ({ setModal, cb }) => {
   // initial-time student fetching
   useEffect(() => {
     axios
-      .get(getAllStudent)
+      .get(getNamesOfStudentsRoute)
       .then((res) => {
-        setData(res?.data);
+        setData(res?.data?.result);
       })
       .catch((error) => {
         console.log(error);

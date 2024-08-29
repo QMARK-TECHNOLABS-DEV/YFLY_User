@@ -175,3 +175,5 @@ export const notifyRoute = "/api/notification"
 export const notifyEmployeeRoute = "/api/employee/notification"
 
 export const notification = "/api/notification/send"
+
+export const getNamesOfStudentsRoute = "/api/student/names"
