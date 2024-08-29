@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import FollowTable from "../../components/Table/FollowTable";
 import Pagination from "../../components/Pagination";
 import { followupRoute } from "../../utils/Endpoint";
+import SearchData from "../../components/search/SearchData";
 
 const Followups = () => {
   const [data, setData] = useState([]);
@@ -11,6 +12,7 @@ const Followups = () => {
   const [entries, setEntries] = useState(10);
   const [stage, setStage] = useState(null);
   const [assignee, setAssignee] = useState(null);
+  const [search, setSearch] = useState("");
 
   const adminDefinedData = useSelector((state) => state.data.adminDefinedData);
   const stages =
@@ -23,7 +25,7 @@ const Followups = () => {
   const getData = async () => {
     try {
       const response = await axiosPrivate.get(
-        `${followupRoute}?page=${page}&entries=${entries}&stage=${stage}&assignee=${assignee}`
+        `${followupRoute}?page=${page}&entries=${entries}&search=${search}&stage=${stage}&assignee=${assignee}`
       );
 
       if (response.status === 200) {
@@ -32,6 +34,12 @@ const Followups = () => {
       }
     } catch (error) {
       console.log(error);
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") {
+      getData();
     }
   };
 
@@ -72,6 +80,14 @@ const Followups = () => {
               </option>
             ))}
           </select>
+
+          <SearchData
+            placeholder={"Search Student"}
+            searchHandler={getData}
+            handleKeyPress={handleKeyPress}
+            setSearch={setSearch}
+          />
+
         </div>
       </div>
 

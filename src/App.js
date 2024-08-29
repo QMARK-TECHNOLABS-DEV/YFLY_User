@@ -37,6 +37,7 @@ import useAxiosPrivate from './hooks/useAxiosPrivate';
 import { setNotifications, updateNotifications } from './redux/slices/NotifyReducer';
 import { toast } from 'react-toastify';
 import { onMessage } from 'firebase/messaging';
+import NotFound from './pages/NotFound';
 
 
 function App() {
@@ -125,9 +126,8 @@ function App() {
       <Router>
         <Routes>
           <Route index path='/' element={<Login />} />
+
           <Route path='/' element={<Layout />}>
-
-
             {/* Admin Routes */}
             <Route element={<AdminProtectedRoute />}>
               <Route path='admin/dashboard' element={<Dashboard />} />
@@ -166,7 +166,10 @@ function App() {
               <Route path='student/application/:id' element={<StudentApplication />} />
             </Route>
           </Route>
-          <Route path='*' element={<div>Pages Not Found</div>} />
+
+
+          <Route path='*' element={<NotFound/>} />
+
         </Routes>
       </Router>
     </div >
