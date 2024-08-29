@@ -43,35 +43,37 @@ const StudentDashboard = () => {
         <Carousel banner={Banner} />
 
         {
-          state?.length 
-          ?
-          <h1 className="text-[#0061B2] font-bold text-xl mt-10">
-            Select an Application
-          </h1>
-          :
-          <p>No Applications Available</p>
+          state?.length
+            ?
+            <h1 className="text-[#0061B2] font-bold text-xl mt-10">
+              Select an Application
+            </h1>
+            :
+            <div className=" flex items-center justify-center mt-8 shadow-lg rounded-lg border border-primary_colors ">
+              <p className="py-4 text-center">No Applications Available</p>
+            </div>
         }
 
         <div className="w-full mt-5 flex gap-5 flex-wrap">
           {
-            state?.map((data,i)=>(
+            state?.map((data, i) => (
               <div
-              key={i}
-              onClick={()=> navigate(`/student/application/${data._id}`)}
-              className="flex flex-col p-5 bg-white rounded-lg shadow-xl w-full md:w-[210px] cursor-pointer"
+                key={i}
+                onClick={() => navigate(`/student/application/${data._id}`)}
+                className="flex flex-col p-5 bg-white rounded-lg shadow-xl w-full md:w-[210px] cursor-pointer"
               >
                 <h1 className="text-primary_colors">Application <span className="text-black">{i + 1}</span> </h1>
                 <h1 className="text-primary_colors">Country: <span className="text-black">{data?.country}</span> </h1>
 
-                
+
               </div>
             ))
           }
-          
-         
+
+
         </div>
       </div>
-      
+
     </>
   );
 };
