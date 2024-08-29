@@ -70,9 +70,7 @@ const EmployeeDashboard = () => {
             </div>
           </div>
 
-          {
-            (userData?.department === "registration" || userData?.department === "operations")
-            &&
+          
             <div className=" md:w-1/2 ">
               <div className="flex flex-col justify-center items-center p-9">
                 <button
@@ -83,7 +81,7 @@ const EmployeeDashboard = () => {
                 </button>
               </div>
             </div>
-          }
+          
 
 
         </div>
