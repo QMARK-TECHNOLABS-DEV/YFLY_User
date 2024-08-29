@@ -101,7 +101,7 @@ const Student = () => {
           }
 
           <SearchData
-            placeholder={"Student Data"}
+            placeholder={"Search Student"}
             searchHandler={searchHandler}
             handleKeyPress={handleKeyPress}
             setSearch={setSearch}
