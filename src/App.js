@@ -37,6 +37,7 @@ import useAxiosPrivate from './hooks/useAxiosPrivate';
 import { setNotifications, updateNotifications } from './redux/slices/NotifyReducer';
 import { toast } from 'react-toastify';
 import { onMessage } from 'firebase/messaging';
+import NotFound from './pages/NotFound';
 
 
 function App() {
@@ -167,8 +168,8 @@ function App() {
           </Route>
 
 
-          <Route path='*' element={<div>Pages Not Found</div>} />
-          
+          <Route path='*' element={<NotFound/>} />
+
         </Routes>
       </Router>
     </div >
