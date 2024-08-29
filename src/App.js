@@ -125,9 +125,8 @@ function App() {
       <Router>
         <Routes>
           <Route index path='/' element={<Login />} />
+
           <Route path='/' element={<Layout />}>
-
-
             {/* Admin Routes */}
             <Route element={<AdminProtectedRoute />}>
               <Route path='admin/dashboard' element={<Dashboard />} />
@@ -166,7 +165,10 @@ function App() {
               <Route path='student/application/:id' element={<StudentApplication />} />
             </Route>
           </Route>
+
+
           <Route path='*' element={<div>Pages Not Found</div>} />
+          
         </Routes>
       </Router>
     </div >

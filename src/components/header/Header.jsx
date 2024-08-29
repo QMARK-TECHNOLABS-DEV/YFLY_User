@@ -46,16 +46,9 @@ const Header = () => {
     }
   };
 
-  const LogoutHandler = async () => {
-    await instance
-      .get(userLogout)
-      .then((res) => {
-        dispatch(logout());
-        navigate("/");
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+  const LogoutHandler =() => {
+    dispatch(logout());
+    navigate("/");
   };
 
   const LogoClick = () => {
