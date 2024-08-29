@@ -42,8 +42,7 @@ const StudentTable = ({ data , getData , page , entries}) => {
             <th className="px-3 py-4">Phone</th>
             <th className="px-3 py-4">Counsellor</th>
             <th className="px-3 py-4">Enquiry Route</th>
-            {/* <th className="px-3 py-4">application Id</th> */}
-            {user?.role === "admin" && <th className="px-3 py-4 text-center">Actions</th>}
+             <th className="px-3 py-4 text-center">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -63,9 +62,7 @@ const StudentTable = ({ data , getData , page , entries}) => {
                 <td className="px-3 py-4">{items?.enquiryRoute ? items?.enquiryRoute : "NIL" }</td>
                 
 
-                {
-                  user?.role === "admin"
-                  &&
+                
                   <td className="px-3 py-4 truncate">
 
                         <div className="flex items-center justify-between gap-3">
@@ -82,7 +79,7 @@ const StudentTable = ({ data , getData , page , entries}) => {
                         </div>
                   </td>
 
-                }
+               
               </tr>
             ))
           ) : (
