@@ -3,6 +3,7 @@ import {
   getAllComments,
   getEmployeesRoute,
   notification,
+  notifyRoute,
   postComment,
 } from "../../../utils/Endpoint";
 import { useSelector } from "react-redux";
@@ -67,11 +68,6 @@ const RightSide = ({ data, cb, application }) => {
     const formattedMessage = comment.replace(/@\[(.*?)\]\((.*?)\)/g, "@$1");
     const mentionPersonId = comment.match(/[^(]+(?=\))/g);
 
-    // If there multiple mentioning there the return will there.
-    if (mentionPersonId?.length > 1) {
-      return toast.warning("Please Remove multiple mentioning from the box");
-    }
-
     // Message content
     const message = {
       resourceId: data?._id,
@@ -89,24 +85,21 @@ const RightSide = ({ data, cb, application }) => {
         setComment("");
         cb();
 
-        // there is a single assignee then the function enter here
-        if (mentionPersonId?.length > 0) {
-          // Notification Data
-          const notificationData = {
-            userId: mentionPersonId[0],
-            title: `Comment from ${user?.name}`,
-            body: formattedMessage,
-            notificationType: "comment",
-            route: path?.pathname,
-          };
+        // Notification Data
+        const notificationData = {
+          userIdList: mentionPersonId,
+          title: `Comment from ${user?.name}`,
+          body: formattedMessage,
+          notificationType: "comment",
+          route: path?.pathname,
+        };
 
-          // Notification API call
-          try {
-            await axiosPrivate.post(notification, notificationData);
+        // Notification API call
+        try {
+          await axiosPrivate.post(`${notifyRoute}/multi-send`, notificationData);
 
-          } catch (error) {
-            console.log(error)
-          }
+        } catch (error) {
+          console.log(error)
         }
 
       }
