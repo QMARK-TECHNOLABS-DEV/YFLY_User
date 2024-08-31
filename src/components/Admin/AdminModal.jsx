@@ -32,6 +32,11 @@ const AdminModal = ({ setModal, applicationData, cb }) => {
   });
 
   console.log(applicationData);
+
+  const availableSteps = applicationData?.steps?.filter(
+    (items) => !items?.assignee
+  );
+
   const onChangeCata = async (e) => {
     try {
       const response = await axios.get(
@@ -56,10 +61,12 @@ const AdminModal = ({ setModal, applicationData, cb }) => {
     try {
       const response = await axios.put(workEmployeeAssignRoute, formData);
       if (response?.status === 200) {
+        const step = availableSteps?.find(item=> String(item?._id) === formData?.stepNumber) || 'NA';
+
         const notificationData = {
           userId: formData?.employeeId,
-          title: `${userInfo?.name} Assigned you to the next step `,
-          body: ` assigned you `,
+          title: `New Task assigned by ${userInfo?.name}`,
+          body: `Step : ${step?.name} `,
           notificationType: "assign",
           route: path?.pathname,
         };
@@ -88,9 +95,7 @@ const AdminModal = ({ setModal, applicationData, cb }) => {
     }
   };
 
-  const availableSteps = applicationData?.steps.filter(
-    (items) => !items?.assignee
-  );
+  
 
   return (
     <div className="fixed top-0 left-0 w-full h-screen overflow-auto bg-black/50 flex items-center justify-center z-50">
