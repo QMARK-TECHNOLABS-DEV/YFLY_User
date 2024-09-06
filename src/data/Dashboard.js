@@ -47,22 +47,22 @@ export const FormData = [
 ]
 
 
-export const Office =[
+export const Office = [
     {
-        id:1,
-        name:"Head Office"
+        id: 1,
+        name: "Head Office"
     },
     {
-        id:2,
-        name:"Branch A"
+        id: 2,
+        name: "Branch A"
     },
     {
-        id:3,
-        name:"Branch B"
+        id: 3,
+        name: "Branch B"
     },
     {
-        id:4,
-        name:"Branch C"
+        id: 4,
+        name: "Branch C"
     },
 ]
 
@@ -103,7 +103,7 @@ export const EmpFormData = [
         placeholder: "Education",
         type: "text"
     },
-   
+
 
 ]
 
@@ -136,42 +136,46 @@ export const Address = [
 ]
 
 export const countries = [
-    { id: 1, name: "United States of America" },
+    { id: 1, name: "Austria" },
     { id: 2, name: "Australia" },
-    { id: 3, name: "Canada" },
-    { id: 4, name: "United Kingdom" },
-    { id: 5, name: "New Zealand" },
-    { id: 6, name: "Singapore" },
-    { id: 7, name: "Dubai" },
-    { id: 8, name: "Ireland" },
-    { id: 9, name: "Germany" },
-    { id: 10, name: "France" },
-    { id: 11, name: "Sweden" },
-    { id: 12, name: "Netherlands" },
-    { id: 13, name: "Austria" },
-    { id: 14, name: "Denmark" },
-    { id: 15, name: "Finland" },
-    { id: 16, name: "Italy" },
-    { id: 17, name: "Hungary" },
-    { id: 18, name: "Switzerland" },
-    { id: 19, name: "Spain" },
+    { id: 3, name: "Belgium" },
+    { id: 4, name: "Canada" },
+    { id: 5, name: "China" },
+    { id: 6, name: "Cyprus" },
+    { id: 7, name: "Denmark" },
+    { id: 8, name: "Dubai" },
+    { id: 9, name: "Egypt" },
+    { id: 10, name: "Finland" },
+    { id: 11, name: "France" },
+    { id: 12, name: "Georgia" },
+    { id: 13, name: "Germany" },
+    { id: 14, name: "Hungary" },
+    { id: 15, name: "India" },
+    { id: 16, name: "Ireland" },
+    { id: 17, name: "Italy" },
+    { id: 18, name: "Japan" },
+    { id: 19, name: "Latvia" },
     { id: 20, name: "Lithuania" },
-    { id: 21, name: "Cyprus" },
-    { id: 22, name: "Poland" },
-    { id: 23, name: "Malaysia" },
-    { id: 24, name: "Mauritius" },
-    { id: 25, name: "China" },
-    { id: 26, name: "Vietnam" },
-    { id: 27, name: "Malta" },
-    { id: 28, name: "Japan" },
-    { id: 29, name: "Belgium" },
-    { id: 30, name: "Russia" },
-    { id: 31, name: "South Korea" },
-    { id: 32, name: "India" },
-    { id: 33, name: "Georgia" },
-    { id: 34, name: "Latvia" },
+    { id: 21, name: "Malaysia" },
+    { id: 22, name: "Malta" },
+    { id: 23, name: "Mauritius" },
+    { id: 24, name: "Netherlands" },
+    { id: 25, name: "New Zealand" },
+    { id: 26, name: "Poland" },
+    { id: 27, name: "Russia" },
+    { id: 28, name: "Saudi" },
+    { id: 29, name: "Singapore" },
+    { id: 30, name: "South Korea" },
+    { id: 31, name: "Spain" },
+    { id: 32, name: "Sweden" },
+    { id: 33, name: "Switzerland" },
+    { id: 34, name: "Turkey" },
+    { id: 35, name: "United Kingdom" },
+    { id: 36, name: "United States of America" },
+    { id: 37, name: "Vietnam" }
   ];
   
+
 
 export const Intake = [
     { id: 1, name: "Fall" },
@@ -237,15 +241,15 @@ export const FilterDataDash = [
         placeholder: "",
         icon: ""
     },
-    
+
 ]
 
 
 export const Phases = [
-    {id:1, name:"pending"},
-    {id:2, name:"ongoing"},
-    {id:3, name:"completed"},
-    {id:4, name:"deffered"},
-    {id:5, name:"cancelled"},
-    {id:6, name:"not-enrolled"},
+    { id: 1, name: "pending" },
+    { id: 2, name: "ongoing" },
+    { id: 3, name: "completed" },
+    { id: 4, name: "deffered" },
+    { id: 5, name: "cancelled" },
+    { id: 6, name: "not-enrolled" },
 ]
