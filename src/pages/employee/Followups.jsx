@@ -3,7 +3,7 @@ import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import { useSelector } from "react-redux";
 import FollowTable from "../../components/Table/FollowTable";
 import Pagination from "../../components/Pagination";
-import { followupRoute } from "../../utils/Endpoint";
+import { followupRoute, selectEmployee } from "../../utils/Endpoint";
 import SearchData from "../../components/search/SearchData";
 
 const Followups = () => {
@@ -13,6 +13,8 @@ const Followups = () => {
   const [stage, setStage] = useState(null);
   const [assignee, setAssignee] = useState(null);
   const [search, setSearch] = useState("");
+  const [employeeData, setEmployeeData] = useState([]);
+
 
   const adminDefinedData = useSelector((state) => state.data.adminDefinedData);
   const stages =
@@ -43,8 +45,20 @@ const Followups = () => {
     }
   };
 
+  const getEmployeeData = async () => {
+    try {
+      const result = await axiosPrivate.get(selectEmployee);
+      if (result.status === 200) {
+        setEmployeeData(result?.data?.employee);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
     getData();
+    getEmployeeData()
   }, [stage, assignee]);
 
   return (
@@ -52,17 +66,36 @@ const Followups = () => {
       <div className="flex flex-col sm:flex-row gap-5 sm:gap-0 justify-between">
         <h1 className="text-primary_colors text-2xl font-bold">Follow-ups</h1>
 
-        {user?.role !== "admin" && (
-          <div className="flex gap-5">
-            <select
-              className="w-fit border shadow p-2  rounded-lg text-secondary text-normal focus:outline-none"
-              onClick={(e) => setAssignee(e.target.value)}
-            >
-              <option value="">All</option>
-              <option value={user?._id}>Assigned</option>
-            </select>
-          </div>
-        )}
+        {user?.role === "admin"
+          ?
+          (
+            <div className="flex gap-5">
+              <select
+                className="w-fit border shadow p-2  rounded-lg text-secondary text-normal focus:outline-none"
+                onClick={(e) => setAssignee(e.target.value)}
+              >
+                <option value="">All</option>
+                {employeeData.map((data) => (
+                  <option key={data?._id} value={data?._id}>
+                    {data?.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )
+          :
+          (
+            <div className="flex gap-5">
+              <select
+                className="w-fit border shadow p-2  rounded-lg text-secondary text-normal focus:outline-none"
+                onClick={(e) => setAssignee(e.target.value)}
+              >
+                <option value="">All</option>
+                <option value={user?._id}>Assigned</option>
+              </select>
+            </div>
+          )
+        }
 
         <div className="flex gap-5">
           {/* Select Status option */}

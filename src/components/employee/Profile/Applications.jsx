@@ -46,8 +46,8 @@ const Applications = ({ data }) => {
               <span className="font-thin ps-2">{work?.university}</span>
             </h1>
             <h1 className="font-semibold text-sm">
-              Step Number :{" "}
-              <span className="font-thin ps-2">{work?.stepNumber}</span>
+              Step :{" "}
+              <span className="font-thin ps-2">{work?.step?.name ?? 'NA'}</span>
             </h1>
           </div>
 
