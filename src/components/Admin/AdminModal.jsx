@@ -31,11 +31,7 @@ const AdminModal = ({ setModal, applicationData, cb }) => {
     stepperId: applicationData?._id,
   });
 
-  console.log(applicationData);
-
-  const availableSteps = applicationData?.steps?.filter(
-    (items) => !items?.assignee
-  );
+  // console.log(applicationData);
 
   const onChangeCata = async (e) => {
     try {
@@ -61,7 +57,7 @@ const AdminModal = ({ setModal, applicationData, cb }) => {
     try {
       const response = await axios.put(workEmployeeAssignRoute, formData);
       if (response?.status === 200) {
-        const step = availableSteps?.find(item=> String(item?._id) === formData?.stepNumber) || 'NA';
+        const step = applicationData?.steps?.find(item=> String(item?._id) === formData?.stepNumber) || 'NA';
 
         const notificationData = {
           userId: formData?.employeeId,
@@ -136,7 +132,7 @@ const AdminModal = ({ setModal, applicationData, cb }) => {
                     <option className="text-sm" value="">
                       Select a step
                     </option>
-                    {availableSteps.map((items, i) => (
+                    {applicationData?.steps?.map((items, i) => (
                       <option
                         key={i}
                         className="text-gray-900"
