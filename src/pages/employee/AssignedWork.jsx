@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { getAssignedWorksRoute } from "../../utils/Endpoint";
 import { useSelector } from "react-redux";
 
@@ -11,9 +11,12 @@ const AssignedWork = () => {
   const [works, setWorks] = useState([]);
   const userData = useSelector((state) => state.auth.userInfo);
 
+  const statuses = ['pending', 'ongoing', 'completed'];
+  const [status, setStatus] = useState("all")
+
   const getAssignedWorks = async () => {
     await instance
-      .get(`${getAssignedWorksRoute}/${userData?._id}`)
+      .get(`${getAssignedWorksRoute}/${userData?._id}?status=${status}`)
       .then((res) => {
         setWorks(res.data);
       })
@@ -22,22 +25,40 @@ const AssignedWork = () => {
       });
   };
 
-  useState(() => {
-    window.scroll(0,0)
+  useEffect(() => {
+    window.scroll(0, 0)
     getAssignedWorks();
-  }, []);
+  }, [status]);
 
   return (
     <div className="w-full min-h-screen text-black mt-[5vh]">
-      <h1 className="text-primary_colors text-2xl font-bold">Tasks</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-primary_colors text-2xl font-bold capitalize">{status} Tasks</h1>
+
+        <select
+          onChange={(e)=> setStatus(e.target.value)}
+          name='status'
+          id=""
+          className="w-fit border border-primary_colors p-2  rounded-lg 
+            text-secondary text-normal focus:outline-none capitalize mr-16"
+        >
+          <option value="all">Select Status</option>
+          {statuses?.map((item, index) => (
+            <option key={index} value={item}>
+              {item}
+            </option>
+          ))}
+        </select>
+
+      </div>
       {
-        works?.length > 0 
-        ?
-        <div className="mt-5 w-full flex flex-wrap gap-4">
-          <Applications data={works} />
-        </div>
-        :
-        <p className="text-center text-[#777] mt-9">No Tasks Available</p>
+        works?.length > 0
+          ?
+          <div className="mt-5 w-full flex flex-wrap gap-4">
+            <Applications data={works} />
+          </div>
+          :
+          <p className="text-center text-[#777] mt-9">No Tasks Available</p>
       }
     </div>
   );

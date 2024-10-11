@@ -16,7 +16,7 @@ const Applications = ({ data }) => {
       {data?.map((work, i) => (
         <div
           key={i}
-          // bg-gradient-to-r from-[#52C3FF] to-[#D0EAFF]
+          
           className="bg-white p-5 flex flex-wrap w-full md:w-[450px] justify-around rounded-xl shadow-xl relative text-black hover:scale-105 ease-in-out duration-300 mb-4"
         >
           <img
@@ -27,10 +27,7 @@ const Applications = ({ data }) => {
 
           {/* Application Details */}
           <div className="p-5 flex flex-col w-full capitalize border rounded border-primary_colors/30">
-            {/* <h1 className="font-semibold text-primary_colors mb-2 text-sm">
-              ID:{" "}
-              <span className="font-thin ps-2">{work?.applicationId}</span>
-            </h1> */}
+           
             <h1 className="font-semibold text-sm">
               Student Name :{" "}
               <span className="font-thin ps-2">{work?.studentName}</span>
@@ -67,10 +64,18 @@ const Applications = ({ data }) => {
               </Link>
             )}
             <div
-              className={`p-2 px-10 h-10 text-sm rounded ${
-                work?.stepStatus === "completed"
-                  ? " text-green-800 border border-green-800"
-                  : "text-[#E87D00] border border-[#E87D00]"
+              className={`p-2 px-10 h-10 text-sm rounded ${work?.stepStatus === "completed"
+                  ? 
+                  " text-green-800 border border-green-800"
+                  :
+                  work?.stepStatus === "ongoing"
+                  ? 
+                  "text-[#E87D00] border border-[#E87D00]"
+                  :
+                  work?.stepStatus === "pending"
+                  &&
+                  "text-[#e22727] border border-[#e22727]"
+
               } capitalize w-full text-center`}
             >
               {work?.stepStatus}
