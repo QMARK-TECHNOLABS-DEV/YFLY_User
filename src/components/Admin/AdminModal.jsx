@@ -57,7 +57,9 @@ const AdminModal = ({ setModal, applicationData, cb }) => {
     try {
       const response = await axios.put(workEmployeeAssignRoute, formData);
       if (response?.status === 200) {
-        const step = applicationData?.steps?.find(item=> String(item?._id) === formData?.stepNumber) || 'NA';
+        toast.success(response?.data?.msg);
+
+        const step = applicationData?.steps?.find(item => String(item?._id) === formData?.stepNumber) || 'NA';
 
         const notificationData = {
           userId: formData?.employeeId,
@@ -70,28 +72,24 @@ const AdminModal = ({ setModal, applicationData, cb }) => {
           notification,
           notificationData
         );
+
         console.log(notificationSend);
-        setModal(false);
-        cb();
-        toast.success(response?.data?.msg);
-      } else {
-        toast.error(response?.data?.msg);
+
       }
+
     } catch (error) {
+      console.log(error)
       if (error?.response?.data?.msg === "FCM Token not found") {
         toast.success("Saved changes");
-        setModal(false);
-        cb();
-      } else {
-        console.log(error);
-        toast.error(error?.response?.data?.msg);
       }
     } finally {
       setLoading(false);
+      setModal(false);
+      cb();
     }
   };
 
-  
+
 
   return (
     <div className="fixed top-0 left-0 w-full h-screen overflow-auto bg-black/50 flex items-center justify-center z-50">
