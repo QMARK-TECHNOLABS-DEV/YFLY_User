@@ -11,7 +11,7 @@ const AssignedWork = () => {
   const [works, setWorks] = useState([]);
   const userData = useSelector((state) => state.auth.userInfo);
 
-  const statuses = ['completed', 'pending', 'ongoing'];
+  const statuses = ['pending', 'ongoing', 'completed'];
   const [status, setStatus] = useState("all")
 
   const getAssignedWorks = async () => {
@@ -40,7 +40,7 @@ const AssignedWork = () => {
           name='status'
           id=""
           className="w-fit border border-primary_colors p-2  rounded-lg 
-            text-secondary text-normal focus:outline-none capitalize"
+            text-secondary text-normal focus:outline-none capitalize mr-16"
         >
           <option value="all">Select Status</option>
           {statuses?.map((item, index) => (
