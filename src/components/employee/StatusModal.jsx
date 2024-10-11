@@ -14,10 +14,11 @@ const StatusModal = ({ setModal, stepNumber, applicationData, cb }) => {
   const employeeData = useSelector((state) => state.auth.userInfo);
   const [loading,setLoading] = useState(false)
 
-  const employeeSteps = applicationData?.steps?.filter(
-    (items) => items?.assignee === employeeData?._id
+  const currentStep = applicationData?.steps?.filter(
+    (step) => step?._id === stepNumber
   );
-  console.log(employeeSteps, employeeData, applicationData);
+
+  // console.log({applicationData});
 
   const submitHandler = async (e) => {
     e.preventDefault();
@@ -65,7 +66,7 @@ const StatusModal = ({ setModal, stepNumber, applicationData, cb }) => {
             {/* File Name and submit */}
             <div className="w-full p-5">
               <h1 className="font-bold capitalize  mb-4 text-primary_colors">
-                Update the status of step {stepNumber}*
+                Update the status of step : <span className="text-black">{currentStep[0]?.name ?? 'NA'}</span>
               </h1>
               <label htmlFor="" className="text-sm text-gray-600 font-semibold">
                 Step Status*
@@ -80,8 +81,8 @@ const StatusModal = ({ setModal, stepNumber, applicationData, cb }) => {
                   <option className="text-xs" value="">
                     Select an option
                   </option>
-                  {status.map((items) => (
-                    <option value={items?.name}>{items?.name}</option>
+                  {status.map((items, index) => (
+                    <option key={index} value={items?.name}>{items?.name}</option>
                   ))}
                 </select>
               </div>
