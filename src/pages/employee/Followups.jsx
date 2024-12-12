@@ -11,14 +11,14 @@ const Followups = () => {
   const [page, setPage] = useState(1);
   const [entries, setEntries] = useState(10);
   const [stage, setStage] = useState(null);
-  const [assignee, setAssignee] = useState(null);
+  const [assignee, setAssignee] = useState("");
   const [search, setSearch] = useState("");
   const [employeeData, setEmployeeData] = useState([]);
 
 
   const adminDefinedData = useSelector((state) => state.data.adminDefinedData);
-  const stages =
-    adminDefinedData.find((item) => item.name === "stage")?.list || [];
+
+  const stages = adminDefinedData.find((item) => item.name === "stage")?.list || [];
 
   const axiosPrivate = useAxiosPrivate();
 
@@ -64,7 +64,15 @@ const Followups = () => {
   return (
     <div className="w-full min-h-screen text-black my-[5vh]">
       <div className="flex flex-col sm:flex-row gap-5 sm:gap-0 justify-between">
-        <h1 className="text-primary_colors text-2xl font-bold">Follow-ups</h1>
+        <h1 className="text-primary_colors text-2xl font-bold">
+          {
+            assignee
+            ?
+            `Follow-up Tasks`
+            :
+            `Follow-ups`
+          }
+          </h1>
 
         {user?.role === "admin"
           ?
