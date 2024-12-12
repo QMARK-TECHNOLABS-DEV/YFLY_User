@@ -328,7 +328,7 @@ const RightSide = ({ data, cb, application }) => {
                   {items?.commentor}
                 </h1>
                 <h1 className="text-xs text-gray-500">
-                  {new Date(items?.createdAt).toLocaleString()}
+                  {new Date(items?.createdAt).toLocaleString('en-IN')}
                 </h1>
               </div>
               <div className="bg-primary_colors p-5 mt-2 rounded-lg">
