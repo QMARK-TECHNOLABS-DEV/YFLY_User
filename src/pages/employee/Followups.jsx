@@ -16,9 +16,9 @@ const Followups = () => {
   const [employeeData, setEmployeeData] = useState([]);
 
 
-  const adminDefinedData = useSelector((state) => state.data.adminDefinedData);
+  const adminDefinedData = useSelector((state) => state?.data?.adminDefinedData);
 
-  const stages = adminDefinedData.find((item) => item.name === "stage")?.list || [];
+  const stages = adminDefinedData.find((item) => item?.name === "stage")?.list || [];
 
   const axiosPrivate = useAxiosPrivate();
 
@@ -67,14 +67,14 @@ const Followups = () => {
         <h1 className="text-primary_colors text-2xl font-bold">
           {
             assignee
-            ?
-            `Follow-up Tasks`
-            :
-            `Follow-ups`
+              ?
+              `Follow-up Tasks`
+              :
+              `Follow-ups`
           }
-          </h1>
+        </h1>
 
-        {user?.role === "admin"
+        {/* {user?.role === "admin"
           ?
           (
             <div className="flex gap-5">
@@ -103,7 +103,28 @@ const Followups = () => {
               </select>
             </div>
           )
-        }
+        } */}
+
+
+        <div className="flex gap-5">
+          <select
+            className="w-fit border shadow p-2  rounded-lg text-secondary text-normal focus:outline-none capitalize "
+            onClick={(e) => setAssignee(e.target.value)}
+          >
+            <option value="">All</option>
+            {
+              user?.role !== "admin"
+              &&
+              <option value={user?._id}>Assigned</option>
+            }
+            {employeeData?.filter(elem => elem?._id !== String(user?._id))?.map((data) => (
+              <option key={data?._id} value={data?._id}>
+                {data?.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
 
         <div className="flex gap-5">
           {/* Select Status option */}
