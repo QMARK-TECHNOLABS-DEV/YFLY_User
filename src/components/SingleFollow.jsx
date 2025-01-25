@@ -271,8 +271,19 @@ const SingleFollow = ({
                 {notes?.length > 0 &&
                   [...notes]?.reverse()?.map((item, i) => (
                     <div className="flex flex-col">
-                      <label className="capitalize text-[#777] text-sm">
-                        {item?.author?.name ?? "Yfly"}:
+                      <label className=" text-[#777] text-sm flex justify-between ">
+                        <span className="capitalize">
+                          {item?.author?.name ?? "Yfly"}:
+                        </span>
+
+                        {
+                          item?.date
+                          &&
+                          <span className="text-xs">
+                            {new Date(item?.date).toLocaleString('en-IN')}
+                          </span>
+                        }
+                        
                       </label>
                       <textarea
                         name="note"
