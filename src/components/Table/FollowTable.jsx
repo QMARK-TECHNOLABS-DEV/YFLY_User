@@ -18,6 +18,36 @@ const FollowTable = ({ data, setData, page, entries, getData }) => {
 
   const axiosPrivate = useAxiosPrivate();
 
+  // Get color and styling for status tags
+  const getStatusStyles = (status) => {
+    const statusStyles = {
+      Lead: {
+        bg: "bg-blue-100",
+        text: "text-blue-800",
+        border: "border-blue-300",
+        badge: "bg-blue-500",
+      },
+      Hot: {
+        bg: "bg-red-100",
+        text: "text-red-800",
+        border: "border-red-300",
+        badge: "bg-red-500",
+      },
+      Warm: {
+        bg: "bg-orange-100",
+        text: "text-orange-800",
+        border: "border-orange-300",
+        badge: "bg-orange-500",
+      },
+    };
+    return statusStyles[status] || {
+      bg: "bg-gray-100",
+      text: "text-gray-800",
+      border: "border-gray-300",
+      badge: "bg-gray-500",
+    };
+  };
+
   // getting the Employee data
   const getEmployeeData = async () => {
     try {
@@ -53,6 +83,7 @@ const FollowTable = ({ data, setData, page, entries, getData }) => {
               <th className="px-2 py-4">Phone</th>
               <th className="px-2 py-4">Assignee</th>
               <th className="px-2 py-4">Stage</th>
+              <th className="px-2 py-4">Status</th>
               {/* <th className="px-2 py-4">followup method</th> */}
               <th className="px-2 py-4">View</th>
             </tr>
@@ -85,29 +116,25 @@ const FollowTable = ({ data, setData, page, entries, getData }) => {
                     {item?.stageName ?? "NIL"}
                   </td>
 
-                  {/* Methods */}
-                  {/* <td className="px-2 py-4 capitalize flex  gap-2">
-                    {comMethods &&
-                      comMethods?.list?.map((data) => (
-                        <div
-                          className="flex flex-col items-start"
-                          key={data?._id}
-                          value={data?._id}
-                        >
-                          <label htmlFor={`checkBox-${i}`}>
-                            {data?.label?.split("")[0]}
-                          </label>
-                          <input
-                            id={`checkBox-${i}`}
-                            type="checkbox"
-                            className="cursor-pointer"
-                            checked={item?.communication?.includes(data._id)}
-                          />
-                        </div>
-                      ))}
-                  </td> */}
+                  {/* Status Tag */}
+                  <td className="px-2 py-4">
+                    {item?.status ? (
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold border ${
+                          getStatusStyles(item.status).bg
+                        } ${getStatusStyles(item.status).text} ${
+                          getStatusStyles(item.status).border
+                        } border`}
+                      >
+                        {item?.status}
+                      </span>
+                    ) : (
+                      <span className="text-gray-400 text-xs">Not Set</span>
+                    )}
+                  </td>
 
-                  <td className="px-2 py-4 capitalize">
+                  {/* View Button */}
+                  <td className="px-2 py-4">
                     {/* <button
                       onClick={() => openModal(item)}
                       className="bg-primary_colors p-2 px-4 text-white text-xs rounded">
