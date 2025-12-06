@@ -40,6 +40,7 @@ const SingleFollow = ({
   // const [studentName, setStudentName] = useState("")
   const [notes, setNotes] = useState([]);
   const [comments, setComments] = useState([]);
+  const [previousAttachments, setPreviousAttachments] = useState([]);
 
   const changeHandler = (e) => {
     const { name, value } = e.target;
@@ -188,6 +189,14 @@ const SingleFollow = ({
         }));
 
         setNotes(followup?.notes);
+        // Fetch and set comments
+        if (followup?.comments && Array.isArray(followup.comments)) {
+          setComments(followup.comments);
+        }
+        // Fetch and set previous attachments
+        if (followup?.attachments && Array.isArray(followup.attachments)) {
+          setPreviousAttachments(followup.attachments);
+        }
         // setStudentName(studentData.name)
       }
     } catch (error) {
@@ -218,6 +227,7 @@ const SingleFollow = ({
       formDataToSend.append("author", followData.author);
       formDataToSend.append("communication", JSON.stringify(followData.communication));
       formDataToSend.append("contents", JSON.stringify(followData.contents));
+      formDataToSend.append("comments", JSON.stringify(comments));
 
       // Add files
       followData.attachments.forEach((attachment, index) => {
@@ -410,34 +420,38 @@ const SingleFollow = ({
                   <h2 className="text-sm mt-4">Previous Notes: </h2>
                 )}
                 {notes?.length > 0 &&
-                  [...notes]?.reverse()?.map((item, i) => (
-                    <div className="flex flex-col">
-                      <label className=" text-[#777] text-sm flex justify-between ">
-                        <span className="capitalize">
-                          {item?.author?.name ?? "Yfly"}:
-                        </span>
-
-                        {
-                          item?.date
-                          &&
-                          <span className="text-xs">
-                            {new Date(item?.date).toLocaleString('en-IN')}
+                  [...notes]?.reverse()?.map((item, i) => {
+                    // Parse item if it's a string
+                    const parsedItem = typeof item === 'string' ? JSON.parse(item) : item;
+                    return (
+                      <div className="flex flex-col" key={i}>
+                        <label className=" text-[#777] text-sm flex justify-between ">
+                          <span className="capitalize">
+                            {parsedItem?.author?.name ?? "Yfly"}:
                           </span>
-                        }
-                        
-                      </label>
-                      <textarea
-                        name="note"
-                        placeholder="Note"
-                        id=""
-                        // cols="20"
-                        rows="2"
-                        value={item?.content}
-                        disabled={true}
-                        className="w-full border-2 rounded-lg bg-primary_colors/5  border-primary_colors p-2 focus:outline-none"
-                      ></textarea>
-                    </div>
-                  ))}
+
+                          {
+                            parsedItem?.date
+                            &&
+                            <span className="text-xs">
+                              {new Date(parsedItem?.date).toLocaleString('en-IN')}
+                            </span>
+                          }
+                          
+                        </label>
+                        <textarea
+                          name="note"
+                          placeholder="Note"
+                          id=""
+                          // cols="20"
+                          rows="2"
+                          value={parsedItem?.content}
+                          disabled={true}
+                          className="w-full border-2 rounded-lg bg-primary_colors/5  border-primary_colors p-2 focus:outline-none"
+                        ></textarea>
+                      </div>
+                    );
+                  })}
               </div>
             </div>
 
@@ -486,13 +500,31 @@ const SingleFollow = ({
               </div>
 
               {/* Attached Files List */}
-              {followData?.attachments?.length > 0 && (
+              {(followData?.attachments?.length > 0 || previousAttachments?.length > 0) && (
                 <div className="mb-3">
                   <label className="text-xs text-gray-600 block mb-2">Attached Files:</label>
                   <div className="flex flex-wrap gap-2">
+                    {/* Previously Saved Attachments */}
+                    {previousAttachments?.map((attachment, index) => (
+                      <div
+                        key={`prev-${index}`}
+                        className="flex items-center gap-2 bg-green-50 px-3 py-2 rounded-lg border border-green-300"
+                      >
+                        <div className="flex-1">
+                          <p className="text-xs font-medium text-gray-700 truncate">
+                            {attachment.name || attachment.filename}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {attachment.size ? (attachment.size / 1024).toFixed(2) : 'N/A'} KB
+                          </p>
+                        </div>
+                        <span className="text-xs text-green-600 font-semibold">Saved</span>
+                      </div>
+                    ))}
+                    {/* Newly Added Attachments */}
                     {followData?.attachments?.map((attachment, index) => (
                       <div
-                        key={index}
+                        key={`new-${index}`}
                         className="flex items-center gap-2 bg-blue-50 px-3 py-2 rounded-lg border border-primary_colors/30"
                       >
                         <div className="flex-1">
