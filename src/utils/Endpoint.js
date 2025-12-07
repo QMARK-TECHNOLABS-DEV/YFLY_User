@@ -1,5 +1,6 @@
 // PRODUCTION BASE URL
-export const baseUrl = "https://yflyserver.qmarkdesk.com" 
+export const baseUrl = process.env.REACT_APP_API_URL 
+// export const baseUrl = "https://yflyserver.qmarkdesk.com" 
 // export const baseUrl = "https://server.emtsolutions.online" 
 
 // DEVELOPMENT BASE URL
