@@ -16,6 +16,7 @@ import UserProtectedRoute from './routes/UserProtectedRoute';
 import Employee from './pages/admin/Employee'
 import EmployeeDashboard from './pages/employee/EmployeeDashboard';
 import AssignedWork from './pages/employee/AssignedWork'
+import DailyTaskUpdatePortal from './pages/employee/DailyTaskUpdatePortal';
 
 import StudentProtectedRoute from './routes/StudentProtectedRoute';
 import StudentDashboard from './pages/student/StudentDashboard';
@@ -152,6 +153,7 @@ function App() {
             <Route element={<UserProtectedRoute />}>
               <Route path='employee/dashboard' element={<EmployeeDashboard />} />
               <Route path='employee/task' element={<AssignedWork />} />
+              <Route path='employee/daily-tasks' element={<DailyTaskUpdatePortal />} />
               <Route path='employee/application/:id/:stepperId' element={<Application />} />
               <Route path='employee/applications' element={<AllApplications />} />
               <Route path='employee/followups' element={<Followups />} />

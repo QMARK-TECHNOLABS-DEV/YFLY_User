@@ -38,32 +38,54 @@ const DocModal = ({ setModal, applicationData, cb }) => {
   // Reading the file
   const onsubmitHandler = async (e) => {
     e.preventDefault();
+    
+    // Validate inputs
+    if (!data.document) {
+      toast.error("Please select a document to upload");
+      return;
+    }
+    
+    if (!data.docName.trim()) {
+      toast.error("Please enter a document name");
+      return;
+    }
+    
+    if (!applicationData?._id) {
+      toast.error("Application ID not found");
+      return;
+    }
+
     setLoading(true);
     try {
       const formData = new FormData();
       formData.append("document", data.document);
+      formData.append("docName", data.docName);
 
-      // console.log("document", data.document)
-      // console.log(formData);
       const response = await axios.post(
         `${uploadDocumentRoute}/${applicationData?._id}/${data?.docName}`,
-        formData
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
       );
-      // console.log(response);
+      
       if (response?.status === 200 || response?.status === 201) {
-        console.log(response);
         setLoading(false);
         setModal(false);
+        setData({ document: null, docName: "" });
         cb();
-        toast.success(response?.data?.msg);
+        toast.success(response?.data?.msg || "Document uploaded successfully");
       } else {
-        toast.error("Data Fetching  error");
+        setLoading(false);
+        toast.error("Failed to upload document");
       }
     } catch (error) {
-      console.log(error);
-      toast.error(error?.response?.data?.msg || "An error occurred");
-    } finally {
+      console.log("Upload error:", error);
       setLoading(false);
+      const errorMsg = error?.response?.data?.msg || error?.message || "An error occurred while uploading";
+      toast.error(errorMsg);
     }
   };
 
@@ -141,16 +163,22 @@ const DocModal = ({ setModal, applicationData, cb }) => {
                 <input
                   type="text"
                   name="docName"
-                  className="border w-full p-2 focus:outline-none text-sm rounded mt-1"
+                  className="border w-full p-2 focus:outline-none text-sm rounded mt-1 focus:border-primary_colors focus:ring-1 focus:ring-primary_colors"
                   placeholder="Eg: Pancard"
                   onChange={onChangeHandler}
+                  value={data.docName}
                 />
                 <div className="flex w-full">
                   <button
                     type="submit"
-                    className="bg-primary_colors p-2 px-4 rounded text-white text-sm mt-6 w-full"
+                    disabled={!data.document || !data.docName.trim() || loading}
+                    className={`p-2 px-4 rounded text-white text-sm mt-6 w-full font-semibold transition-all ${
+                      !data.document || !data.docName.trim() || loading
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-primary_colors hover:bg-blue-700 hover:scale-105"
+                    }`}
                   >
-                    Submit
+                    {loading ? "Uploading..." : "Upload Document"}
                   </button>
                 </div>
               </div>

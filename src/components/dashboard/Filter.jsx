@@ -15,9 +15,6 @@ const Filter = ({ setData, endPoint, isDashboard, page, entries }) => {
   const [form, setForm] = useState({
     start_date: "",
     end_date: "",
-    country: "",
-    intake: "",
-    status: "",
   });
 
   //   @DCS updating the form data
@@ -31,11 +28,11 @@ const Filter = ({ setData, endPoint, isDashboard, page, entries }) => {
   //   @DCS Submitting the data
   const submitData = async (e) => {
     e.preventDefault();
-    const { start_date, end_date, country, intake, status } = form;
+    const { start_date, end_date } = form;
     try {
       setLoader(true);
       const res = await axios.get(
-        `${endPoint}?page=${page}&entries=${entries}&start_date=${start_date}&end_date=${end_date}&country=${country}&intake=${intake}&status=${status}`
+        `${endPoint}?page=${page}&entries=${entries}&start_date=${start_date}&end_date=${end_date}`
       );
       // console.log(res);
       setData(res.data);
@@ -52,9 +49,9 @@ const Filter = ({ setData, endPoint, isDashboard, page, entries }) => {
       <form
         onSubmit={submitData}
         action=""
-        className="flex flex-col justify-between md:flex-row gap-5 md:gap-5 "
+        className="flex flex-col justify-between md:flex-row gap-5 md:gap-5 items-end"
       >
-        <div className="relative">
+        <div className="relative flex-1">
           <label htmlFor="" className="absolute top-[-20px] left-0 text-xs ">
             Starting Date
           </label>
@@ -63,11 +60,11 @@ const Filter = ({ setData, endPoint, isDashboard, page, entries }) => {
             type="date"
             name="start_date"
             placeholder=""
-            className="border border-primary_colors p-2  rounded-lg text-secondary text-normal focus:outline-none w-full"
+            className="border border-primary_colors p-3 rounded-lg text-secondary text-normal focus:outline-none w-full"
           />
         </div>
 
-        <div className="relative">
+        <div className="relative flex-1">
           <label htmlFor="" className="absolute top-[-20px] left-0 text-xs ">
             Ending Date
           </label>
@@ -76,7 +73,7 @@ const Filter = ({ setData, endPoint, isDashboard, page, entries }) => {
             type="date"
             name="end_date"
             placeholder=""
-            className="border border-primary_colors p-2  rounded-lg text-secondary text-normal focus:outline-none w-full"
+            className="border border-primary_colors p-3 rounded-lg text-secondary text-normal focus:outline-none w-full"
           />
         </div>
 
@@ -86,7 +83,7 @@ const Filter = ({ setData, endPoint, isDashboard, page, entries }) => {
             onChange={changeHandler}
             name={data?.name}
             id=""
-            className="border border-primary_colors p-2  rounded-lg text-secondary text-normal focus:outline-none w-full"
+            className="border border-primary_colors p-3 rounded-lg text-secondary text-normal focus:outline-none w-full flex-1"
           >
             <option value="">Select {data.name}</option>
             {data?.options?.map((data) => (
@@ -98,7 +95,7 @@ const Filter = ({ setData, endPoint, isDashboard, page, entries }) => {
         ))}
         <button
           type="submit"
-          className="bg-primary_colors p-2 rounded text-white text-normal  hover:scale-105 ease-in-out duration-200 w-full"
+          className="bg-primary_colors p-3 px-8 rounded-lg text-white text-normal font-medium hover:scale-105 ease-in-out duration-200 whitespace-nowrap"
         >
           Filter
         </button>
