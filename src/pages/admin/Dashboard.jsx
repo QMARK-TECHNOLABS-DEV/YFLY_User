@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { dashData } from "../../utils/Endpoint";
+import { dashData, getEmployeesRoute } from "../../utils/Endpoint";
 import { FaUserGraduate } from "react-icons/fa";
 import { MdManageAccounts } from "react-icons/md";
 import { Link } from "react-router-dom";
@@ -9,6 +9,7 @@ import RegistrationForm from "../../components/dashboard/RegistrationForm";
 import Cards from "../../components/dashboard/Cards";
 import StudentLoader from "../../components/loading/StudentLoader";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
+import TestExamNotificationModal from "../../components/notification/TestExamNotificationModal";
 
 const Dashboard = () => {
   const axios = useAxiosPrivate();
@@ -16,6 +17,8 @@ const Dashboard = () => {
   const [data, setData] = useState([]);
   const [modal, setModal] = useState(false);
   const [empModal, setEmpModal] = useState(false);
+  const [testExamModal, setTestExamModal] = useState(false);
+  const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(false);
 
   // @DCS All Card Data
@@ -32,6 +35,18 @@ const Dashboard = () => {
       })
       .finally(() => {
         setLoading(false);
+      });
+  }, []);
+
+  // Fetch employees for notification
+  useEffect(() => {
+    axios
+      .get(getEmployeesRoute)
+      .then((res) => {
+        setEmployees(res.data);
+      })
+      .catch((error) => {
+        console.log(error);
       });
   }, []);
 
@@ -54,17 +69,24 @@ const Dashboard = () => {
           <div className="">
             {loading ? <StudentLoader /> : <Cards data={data} />}
           </div>
-          <div className="w-full flex items-center justify-end">
+          <div className="w-full flex items-center justify-end gap-2 flex-wrap">
+            <button
+              onClick={() => setTestExamModal(true)}
+              className="p-2 px-4 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 hover:scale-105 ease-in-out duration-200 transition-all font-semibold"
+            >
+              📝 Test/Exam Notification
+            </button>
+
             <button
               onClick={() => setEmpModal(true)}
-              className="me-2 p-2 px-4 text-normal bg-primary_colors text-white rounded-lg hover:scale-105 ease-in-out duration-200"
+              className="p-2 px-4 text-sm bg-primary_colors text-white rounded-lg hover:scale-105 ease-in-out duration-200"
             >
               Register a New Employee
             </button>
 
             <button
               onClick={() => setModal(!modal)}
-              className="me-2 p-2 px-4 text-normal bg-primary_colors text-white rounded-lg hover:scale-105 ease-in-out duration-200"
+              className="p-2 px-4 text-sm bg-primary_colors text-white rounded-lg hover:scale-105 ease-in-out duration-200"
             >
               Register a New Student
             </button>
@@ -119,6 +141,12 @@ const Dashboard = () => {
       {modal && <RegistrationForm setModal={setModal} entity="Student" />}
       {empModal && (
         <RegistrationForm setModal={setEmpModal} entity="Employee" />
+      )}
+      {testExamModal && (
+        <TestExamNotificationModal 
+          setModal={setTestExamModal} 
+          employees={employees}
+        />
       )}
     </>
   );

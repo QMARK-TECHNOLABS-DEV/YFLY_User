@@ -13,8 +13,6 @@ const TrackingUI = ({stepper}) => {
   const axios = useAxiosPrivate();
 
   const [currentStep, setCurrentStep] = useState(0);
-  const [complete, setComplete] = useState(false);
-  const [state, setState] = useState([]);
 
   const user = useSelector((state) => state.auth.userInfo);
 
@@ -22,14 +20,12 @@ const TrackingUI = ({stepper}) => {
     axios
       .get(`${getAnApplicationRoute}/${user?.applicationId}`)
       .then((res) => {
-        setState(res.data);
         setCurrentStep(res.data.currentStep || 0);
-        setComplete();
       })
       .catch((error) => {
         console.log(error);
       });
-  }, [user]);
+  }, [user, axios]);
 
   return (
     <>
@@ -52,11 +48,7 @@ const TrackingUI = ({stepper}) => {
               } `}
             >
               <div className={`step ${user.role === "student" && "me-10"}`}>
-                {i + 1 < currentStep || step?.status === "completed" ? (
-                  <TiTick size={24} />
-                ) : (
-                  i + 1
-                )}
+                <TiTick size={24} />
               </div>
               <Tippy className="" content={<div>{step.name}</div>}>
                 <p className="text-gray-500 w-10  text-xs font-semibold mt-2 truncate cursor-pointer">

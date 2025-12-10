@@ -48,45 +48,82 @@ const ApplicationCard = ({ data, getData }) => {
     setDeleteModal(true)
   }
 
+  // Calculate deadline status
+  const getDeadlineStatus = () => {
+    // You can add deadline logic here if deadline field exists
+    // For now, we'll show a general deadline indicator
+    return "Active";
+  };
+
+  // Format date if available
+  const formatDate = (date) => {
+    if (!date) return "N/A";
+    return new Date(date).toLocaleDateString('en-IN', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+
   return (
     <>
     <div
       onClick={(e) =>
         navigate(`/applications/${data.applicationId}/${data._id}`)
       }
-      className="relative p-8 bg-white rounded-lg shadow-lg w-full md:w-[310px] capitalize hover:scale-105 ease-in-out duration-200 cursor-pointer"
+      className="relative p-5 bg-white rounded-lg shadow-md hover:shadow-lg w-full md:w-[320px] capitalize hover:scale-102 ease-in-out duration-200 cursor-pointer border-l-4 border-primary_colors overflow-hidden"
     >
-      <h1 className="font-semibold text-primary_colors">
-        university:{" "}
-        <span className="font-medium text-sm">{data?.university}</span>
-      </h1>
-      <h1 className="font-semibold text-primary_colors">
-        Program:{" "}
-        <span className="font-medium text-sm">{data?.program}</span>
-      </h1>
-      <h1 className="font-semibold text-primary_colors">
-        Intake:{" "}
-        <span className="font-medium text-sm">{data?.intake}</span>
-      </h1>
-      <h1 className="mt-2 text-sm">
-        Partnership:{" "}
-        <span className="font-medium text-gray-500">{data?.partnership}</span>
-      </h1>
-      <h1 className="mt-2 text-sm">
-        Through:{" "}
-        <span className="font-medium text-gray-500">{data?.through}</span>
-      </h1>
-      <h1 className="mt-2 text-sm">
-        Total Steps:{" "}
-        <span className="font-medium text-gray-500">{data?.steps.length}</span>
-      </h1>
+      {/* Top Bar - Delete and Status */}
+      <div className="flex items-center justify-between mb-4">
+        <MdDeleteOutline
+          onClick={handleDelete}
+          size={20}
+          className="cursor-pointer text-red-600 hover:text-red-800 hover:scale-110 transition-all"
+        />
+        <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs font-bold">
+          ACTIVE
+        </span>
+      </div>
 
-      <MdDeleteOutline
-        onClick={handleDelete}
-        size={26}
-        className="absolute top-4 right-4 cursor-pointer hover:scale-105 ease-in-out duration-400 text-red-700"
-      />
+      {/* University */}
+      <div className="mb-3">
+        <h1 className="font-bold text-sm text-primary_colors truncate">{data?.university}</h1>
+      </div>
 
+      {/* Program & Intake */}
+      <div className="grid grid-cols-2 gap-2 mb-3 text-xs">
+        <div>
+          <p className="text-gray-600 font-semibold mb-1">Program</p>
+          <p className="text-gray-800 font-medium line-clamp-2">{data?.program}</p>
+        </div>
+        <div>
+          <p className="text-gray-600 font-semibold mb-1">Intake</p>
+          <p className="text-gray-800 font-medium">{data?.intake}</p>
+        </div>
+      </div>
+
+      {/* Status Badge */}
+      <div className="pt-3 border-t border-gray-200">
+        <span
+          className={`inline-block font-bold capitalize px-2 py-1 rounded text-xs ${
+            data?.phase === "pending"
+              ? "bg-yellow-100 text-yellow-700"
+              : data?.phase === "ongoing"
+              ? "bg-blue-100 text-blue-700"
+              : data?.phase === "completed"
+              ? "bg-green-100 text-green-700"
+              : data?.phase === "cancelled"
+              ? "bg-red-100 text-red-700"
+              : data?.phase === "deferred"
+              ? "bg-orange-100 text-orange-700"
+              : data?.phase === "not-enrolled"
+              ? "bg-gray-200 text-gray-700"
+              : "bg-gray-100 text-gray-700"
+          }`}
+        >
+          {data?.phase || "NIL"}
+        </span>
+      </div>
     </div>
       {
         deleteModal

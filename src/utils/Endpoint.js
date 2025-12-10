@@ -177,3 +177,17 @@ export const notifyEmployeeRoute = "/api/employee/notification"
 export const notification = "/api/notification/send"
 
 export const getNamesOfStudentsRoute = "/api/student/names"
+
+// Delete endpoints for followup resources
+// DELETE /api/student/followup/:followupId/note/:noteId
+export const deleteFollowupNote =
+  "/api/student/followup/:followupId/note/:noteId";
+
+// DELETE /api/student/followup/:followupId/attachment/:attachmentId
+// Note: backend should also remove the file from the local uploads folder
+export const deleteFollowupAttachment =
+  "/api/student/followup/:followupId/attachment/:attachmentId";
+
+// DELETE /api/student/followup/:followupId/comment/:commentId
+export const deleteFollowupComment =
+  "/api/student/followup/:followupId/comment/:commentId";
