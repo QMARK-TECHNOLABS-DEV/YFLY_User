@@ -19,15 +19,15 @@ const TrackerVertical = ({ data }) => {
                     : "after:bg-gray-500"
                 } `}
               >
-                <div
-                  className={`relative z-10  w-8 h-8 flex justify-center items-center rounded-full text-white ${
-                    items?.status === "completed"
-                      ? "bg-primary_colors"
-                      : "bg-blue-300"
-                  }`}
-                >
-                  {items?.status === "completed" ? <TiTick size={24} /> : i + 1}
-                </div>
+              <div
+                className={`relative z-10  w-8 h-8 flex justify-center items-center rounded-full text-white ${
+                  items?.status === "completed"
+                    ? "bg-primary_colors"
+                    : "bg-blue-300"
+                }`}
+              >
+                {items?.status === "completed" ? <TiTick size={24} /> : <TiTick size={24} />}
+              </div>
               </div>
               <div
                 className={`mt-1 text-sm capitalize ${
@@ -36,7 +36,6 @@ const TrackerVertical = ({ data }) => {
                     : "text-gray-600"
                 } `}
               >
-                <h1 className="pb-1 font-semibold">Step {i + 1}</h1>
                 <Tippy className="" content={<div>{items.name}</div>}>
                   <p className="text-gray-500 w-10  text-xs font-semibold mt-2 truncate cursor-pointer">
                     {items.name}{" "}

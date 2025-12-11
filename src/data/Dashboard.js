@@ -197,52 +197,9 @@ export const Intake = [
 ];
 
 
-export const FilterData = [
-    {
-        id: 1,
-        type: "",
-        name: "country",
-        options: [...countries],
-        placeholder: "",
-        icon: ""
-    },
-    {
-        id: 2,
-        type: "",
-        name: "intake",
-        options: [...Intake],
-        placeholder: "",
-        icon: ""
-    },
-    {
-        id: 3,
-        type: "",
-        name: "status",
-        options: [...Statuses],
-        placeholder: "",
-        icon: ""
-    },
-]
+export const FilterData = []
 
-export const FilterDataDash = [
-    {
-        id: 1,
-        type: "",
-        name: "country",
-        options: [...countries],
-        placeholder: "",
-        icon: ""
-    },
-    {
-        id: 2,
-        type: "",
-        name: "intake",
-        options: [...Intake],
-        placeholder: "",
-        icon: ""
-    },
-
-]
+export const FilterDataDash = []
 
 
 export const Phases = [
