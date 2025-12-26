@@ -1,12 +1,12 @@
 // PRODUCTION BASE URL
-export const baseUrl = process.env.REACT_APP_API_URL;
+// export const baseUrl = process.env.REACT_APP_API_URL;
 // export const baseUrl = "https://yflyserver.qmarkdesk.com"
 // export const baseUrl = "https://server.emtsolutions.online"
 
 // DEVELOPMENT BASE URL
 // export const baseUrl = "https://yfly-server.onrender.com";
 // export const baseUrl = "https://yflydevserver.qmarkdesk.com"
-// export const baseUrl = "http://localhost:8800";
+export const baseUrl = "http://localhost:8800";
 
 // Login page
 export const loginPost = "/api/auth/login";

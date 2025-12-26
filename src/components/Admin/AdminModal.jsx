@@ -16,7 +16,7 @@ import ReqLoader from "../loading/ReqLoader";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import { axiosPrivate } from "../../api/axios";
 
-const AdminModal = ({ setModal, applicationData, cb }) => {
+const AdminModal = ({ setModal, applicationData, cb, stepNumber }) => {
   const axios = useAxiosPrivate();
   const path = useLocation();
 
@@ -27,9 +27,19 @@ const AdminModal = ({ setModal, applicationData, cb }) => {
   const [formData, setFormData] = useState({
     applicationId: applicationData?.applicationId,
     employeeId: "",
-    stepNumber: "",
+    stepNumber: stepNumber || "",
     stepperId: applicationData?._id,
   });
+
+  // Keep form data in sync when props change
+  React.useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      applicationId: applicationData?.applicationId,
+      stepNumber: stepNumber || prev.stepNumber || "",
+      stepperId: applicationData?._id,
+    }));
+  }, [applicationData, stepNumber]);
 
   // console.log(applicationData);
 
@@ -59,7 +69,10 @@ const AdminModal = ({ setModal, applicationData, cb }) => {
       if (response?.status === 200) {
         toast.success(response?.data?.msg);
 
-        const step = applicationData?.steps?.find(item => String(item?._id) === formData?.stepNumber) || 'NA';
+        const step =
+          applicationData?.steps?.find(
+            (item) => String(item?._id) === formData?.stepNumber
+          ) || "NA";
 
         const notificationData = {
           userId: formData?.employeeId,
@@ -74,11 +87,9 @@ const AdminModal = ({ setModal, applicationData, cb }) => {
         );
 
         console.log(notificationSend);
-
       }
-
     } catch (error) {
-      console.log(error)
+      console.log(error);
       if (error?.response?.data?.msg === "FCM Token not found") {
         toast.success("Saved changes");
       }
@@ -88,8 +99,6 @@ const AdminModal = ({ setModal, applicationData, cb }) => {
       cb();
     }
   };
-
-
 
   return (
     <div className="fixed top-0 left-0 w-full h-screen overflow-auto bg-black/50 flex items-center justify-center z-50">
@@ -109,7 +118,9 @@ const AdminModal = ({ setModal, applicationData, cb }) => {
             {/* File Name and submit */}
             <div className="w-full p-5">
               <h1 className="font-bold capitalize  mb-4 text-primary_colors">
-                Assign to the next step
+                {formData?.stepNumber
+                  ? "Assign to the current step"
+                  : "Assign to the next step"}
               </h1>
 
               <div>
@@ -123,6 +134,7 @@ const AdminModal = ({ setModal, applicationData, cb }) => {
                   <select
                     ref={selectRef}
                     name="stepNumber"
+                    value={formData.stepNumber}
                     id=""
                     className="border p-3 w-full rounded focus:outline-none text-sm text-gray-400"
                     onChange={inputChangeHandler}

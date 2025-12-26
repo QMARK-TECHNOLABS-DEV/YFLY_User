@@ -107,12 +107,13 @@ const RightSide = ({ data, cb, application }) => {
 
         // Notification API call
         try {
-          await axiosPrivate.post(`${notifyRoute}/multi-send`, notificationData);
-
+          await axiosPrivate.post(
+            `${notifyRoute}/multi-send`,
+            notificationData
+          );
         } catch (error) {
-          console.log(error)
+          console.log(error);
         }
-
       }
     } catch (error) {
       console.log(error);
@@ -160,222 +161,264 @@ const RightSide = ({ data, cb, application }) => {
 
         {/* Tasks Container */}
         <div className="space-y-4">
-        {empTasks && empTasks.length > 0 ? (
-          empTasks?.map((empTask) => (
-            <div key={empTask._id} className="bg-white p-6 rounded-xl border-l-4 border-primary_colors shadow-md hover:shadow-lg transition-all transform hover:scale-102">
-              {/* Top Section: Date & Clear Status Display */}
-              <div className="flex justify-between items-start mb-5 gap-4">
-                <span className="inline-block px-4 py-2 bg-blue-50 text-primary_colors text-xs font-bold rounded-lg border border-blue-200">
-                  📅 {createdDate}
-                </span>
-                
-                {/* STATUS SECTION - VERY CLEAR */}
-                <div className="flex-1 bg-gradient-to-r from-orange-50 to-red-50 p-3 rounded-lg border-2 border-orange-300">
-                  <div className="text-center">
-                    <p className="text-xs text-gray-700 font-bold tracking-widest mb-2">TASK STATUS</p>
-                    <div className="flex items-center justify-center gap-2">
-                      {empTask?.status === 'pending' && (
-                        <>
-                          <span className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></span>
-                          <span className="text-base font-black text-yellow-700 uppercase">⏳ Pending</span>
-                        </>
-                      )}
-                      {empTask?.status === 'in-progress' && (
-                        <>
-                          <span className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></span>
-                          <span className="text-base font-black text-blue-700 uppercase">🔄 In Progress</span>
-                        </>
-                      )}
-                      {empTask?.status === 'completed' && (
-                        <>
-                          <span className="w-3 h-3 bg-green-500 rounded-full"></span>
-                          <span className="text-base font-black text-green-700 uppercase">✅ Completed</span>
-                        </>
-                      )}
-                      {!['pending', 'in-progress', 'completed'].includes(empTask?.status) && (
-                        <>
-                          <span className="w-3 h-3 bg-gray-500 rounded-full"></span>
-                          <span className="text-base font-black text-gray-700 uppercase capitalize">{empTask?.status}</span>
-                        </>
-                      )}
+          {empTasks && empTasks.length > 0 ? (
+            empTasks?.map((empTask) => (
+              <div
+                key={empTask._id}
+                className="bg-white p-6 rounded-xl border-l-4 border-primary_colors shadow-md hover:shadow-lg transition-all transform hover:scale-102"
+              >
+                {/* Top Section: Date & Clear Status Display */}
+                <div className="flex justify-between items-start mb-5 gap-4">
+                  <span className="inline-block px-4 py-2 bg-blue-50 text-primary_colors text-xs font-bold rounded-lg border border-blue-200">
+                    📅 {createdDate}
+                  </span>
+
+                  {/* STATUS SECTION - VERY CLEAR */}
+                  <div className="flex-1 bg-gradient-to-r from-orange-50 to-red-50 p-3 rounded-lg border-2 border-orange-300">
+                    <div className="text-center">
+                      <p className="text-xs text-gray-700 font-bold tracking-widest mb-2">
+                        TASK STATUS
+                      </p>
+                      <div className="flex items-center justify-center gap-2">
+                        {empTask?.status === "pending" && (
+                          <>
+                            <span className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></span>
+                            <span className="text-base font-black text-yellow-700 uppercase">
+                              ⏳ Pending
+                            </span>
+                          </>
+                        )}
+                        {empTask?.status === "in-progress" && (
+                          <>
+                            <span className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></span>
+                            <span className="text-base font-black text-blue-700 uppercase">
+                              🔄 In Progress
+                            </span>
+                          </>
+                        )}
+                        {empTask?.status === "completed" && (
+                          <>
+                            <span className="w-3 h-3 bg-green-500 rounded-full"></span>
+                            <span className="text-base font-black text-green-700 uppercase">
+                              ✅ Completed
+                            </span>
+                          </>
+                        )}
+                        {!["pending", "in-progress", "completed"].includes(
+                          empTask?.status
+                        ) && (
+                          <>
+                            <span className="w-3 h-3 bg-gray-500 rounded-full"></span>
+                            <span className="text-base font-black text-gray-700 capitalize">
+                              {empTask?.status}
+                            </span>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Details Section - Two Column Layout */}
-              <div className="grid grid-cols-2 gap-3 mb-4">
-                {/* ASSIGNEE */}
-                <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border-2 border-blue-300">
-                  <p className="text-xs text-blue-700 font-bold tracking-wider mb-2">👤 ASSIGNEE</p>
-                  <p className="text-sm font-bold text-blue-900 capitalize line-clamp-2">
-                    {empTask?.assigneeName || "🔄 Unassigned"}
-                  </p>
+                {/* Details Section - Two Column Layout */}
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  {/* ASSIGNEE */}
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border-2 border-blue-300">
+                    <p className="text-xs text-blue-700 font-bold tracking-wider mb-2">
+                      👤 ASSIGNEE
+                    </p>
+                    <p className="text-sm font-bold text-blue-900 capitalize line-clamp-2">
+                      {empTask?.assigneeName || "🔄 Unassigned"}
+                    </p>
+                  </div>
+
+                  {/* STEP NAME */}
+                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border-2 border-purple-300">
+                    <p className="text-xs text-purple-700 font-bold tracking-wider mb-2">
+                      📌 STEP
+                    </p>
+                    <p className="text-sm font-bold text-purple-900 capitalize line-clamp-2">
+                      {empTask?.name}
+                    </p>
+                  </div>
                 </div>
 
-                {/* STEP NAME */}
-                <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border-2 border-purple-300">
-                  <p className="text-xs text-purple-700 font-bold tracking-wider mb-2">📌 STEP</p>
-                  <p className="text-sm font-bold text-purple-900 capitalize line-clamp-2">
-                    {empTask?.name}
-                  </p>
+                {/* Action Button */}
+                <div className="mb-3">
+                  {!isFinished &&
+                    !(empTask?.assignee || empTask?.assigneeName) && (
+                      <button
+                        onClick={() => {
+                          setStepNumber(empTask._id);
+                          setAssigneeUpdate(true);
+                        }}
+                        className="w-full px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white text-xs font-bold rounded-lg hover:shadow-lg transition-all hover:scale-105"
+                      >
+                        ➕ ASSIGN CURRENT STEP
+                      </button>
+                    )}
                 </div>
-              </div>
 
-              {/* Action Button */}
-              <div className="mb-3">
-                {!isFinished && (
+                {/* Timer Controls */}
+                <div className="bg-gradient-to-r from-green-50 to-green-100 p-3 rounded-lg border-2 border-green-300 flex gap-2 items-center">
+                  <span className="text-green-800 font-bold text-sm flex-shrink-0">
+                    ⏱️ Timer:
+                  </span>
                   <button
-                    onClick={() => {
-                      setStepNumber(empTask._id);
-                      setAssigneeUpdate(true);
-                    }}
-                    className="w-full px-4 py-2 bg-gradient-to-r from-primary_colors to-blue-600 text-white text-xs font-bold rounded-lg hover:shadow-lg transition-all hover:scale-105"
+                    onClick={() => setActiveTaskId(empTask._id)}
+                    className="flex-1 px-3 py-2 bg-green-500 text-white rounded font-bold text-xs hover:bg-green-600 transition-all hover:scale-105"
                   >
-                    ➜ ASSIGN NEXT STEP
+                    ▶ START
                   </button>
-                )}
+                  <button
+                    onClick={() => setActiveTaskId(null)}
+                    className="flex-1 px-3 py-2 bg-red-500 text-white rounded font-bold text-xs hover:bg-red-600 transition-all hover:scale-105"
+                  >
+                    ⏹ STOP
+                  </button>
+                </div>
               </div>
+            ))
+          ) : (
+            <div className="w-full py-12 flex items-center justify-center">
+              <div className="text-center">
+                <p className="text-lg text-gray-500 font-semibold">
+                  📭 No current or upcoming tasks
+                </p>
+                <p className="text-sm text-gray-400 mt-1">
+                  All tasks are completed
+                </p>
+              </div>
+            </div>
+          )}
+          {myTasks && myTasks.length > 0 ? (
+            myTasks?.map((myTasks) => (
+              <div
+                key={myTasks._id}
+                className="bg-white p-6 rounded-xl border-l-4 border-primary_colors shadow-md hover:shadow-lg transition-all transform hover:scale-102"
+              >
+                {/* Top Section: Date & Clear Status Display */}
+                <div className="flex justify-between items-start mb-5 gap-4">
+                  <span className="inline-block px-4 py-2 bg-blue-50 text-primary_colors text-xs font-bold rounded-lg border border-blue-200">
+                    📅 {createdDate}
+                  </span>
 
-              {/* Timer Controls */}
-              <div className="bg-gradient-to-r from-green-50 to-green-100 p-3 rounded-lg border-2 border-green-300 flex gap-2 items-center">
-                <span className="text-green-800 font-bold text-sm flex-shrink-0">⏱️ Timer:</span>
-                <button
-                  onClick={() => setActiveTaskId(empTask._id)}
-                  className="flex-1 px-3 py-2 bg-green-500 text-white rounded font-bold text-xs hover:bg-green-600 transition-all hover:scale-105"
-                >
-                  ▶ START
-                </button>
-                <button
-                  onClick={() => setActiveTaskId(null)}
-                  className="flex-1 px-3 py-2 bg-red-500 text-white rounded font-bold text-xs hover:bg-red-600 transition-all hover:scale-105"
-                >
-                  ⏹ STOP
-                </button>
-              </div>
-            </div>
-          ))
-        ) : (
-          <div className="w-full py-12 flex items-center justify-center">
-            <div className="text-center">
-              <p className="text-lg text-gray-500 font-semibold">📭 No current or upcoming tasks</p>
-              <p className="text-sm text-gray-400 mt-1">All tasks are completed</p>
-            </div>
-          </div>
-        )}
-        {myTasks && myTasks.length > 0 ? (
-          myTasks?.map((myTasks) => (
-            <div key={myTasks._id} className="bg-white p-6 rounded-xl border-l-4 border-primary_colors shadow-md hover:shadow-lg transition-all transform hover:scale-102">
-              {/* Top Section: Date & Clear Status Display */}
-              <div className="flex justify-between items-start mb-5 gap-4">
-                <span className="inline-block px-4 py-2 bg-blue-50 text-primary_colors text-xs font-bold rounded-lg border border-blue-200">
-                  📅 {createdDate}
-                </span>
-                
-                {/* STATUS SECTION - VERY CLEAR */}
-                <div className="flex-1 bg-gradient-to-r from-orange-50 to-red-50 p-3 rounded-lg border-2 border-orange-300">
-                  <div className="text-center">
-                    <p className="text-xs text-gray-700 font-bold tracking-widest mb-2">TASK STATUS</p>
-                    <div className="flex items-center justify-center gap-2">
-                      {myTasks?.status === 'pending' && (
-                        <>
-                          <span className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></span>
-                          <span className="text-base font-black text-yellow-700 uppercase">⏳ Pending</span>
-                        </>
-                      )}
-                      {myTasks?.status === 'in-progress' && (
-                        <>
-                          <span className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></span>
-                          <span className="text-base font-black text-blue-700 uppercase">🔄 In Progress</span>
-                        </>
-                      )}
-                      {myTasks?.status === 'completed' && (
-                        <>
-                          <span className="w-3 h-3 bg-green-500 rounded-full"></span>
-                          <span className="text-base font-black text-green-700 uppercase">✅ Completed</span>
-                        </>
-                      )}
-                      {!['pending', 'in-progress', 'completed'].includes(myTasks?.status) && (
-                        <>
-                          <span className="w-3 h-3 bg-gray-500 rounded-full"></span>
-                          <span className="text-base font-black text-gray-700 uppercase capitalize">{myTasks?.status}</span>
-                        </>
-                      )}
+                  {/* STATUS SECTION - VERY CLEAR */}
+                  <div className="flex-1 bg-gradient-to-r from-orange-50 to-red-50 p-3 rounded-lg border-2 border-orange-300">
+                    <div className="text-center">
+                      <p className="text-xs text-gray-700 font-bold tracking-widest mb-2">
+                        TASK STATUS
+                      </p>
+                      <div className="flex items-center justify-center gap-2">
+                        {myTasks?.status === "pending" && (
+                          <>
+                            <span className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></span>
+                            <span className="text-base font-black text-yellow-700 uppercase">
+                              ⏳ Pending
+                            </span>
+                          </>
+                        )}
+                        {myTasks?.status === "in-progress" && (
+                          <>
+                            <span className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></span>
+                            <span className="text-base font-black text-blue-700 uppercase">
+                              🔄 In Progress
+                            </span>
+                          </>
+                        )}
+                        {myTasks?.status === "completed" && (
+                          <>
+                            <span className="w-3 h-3 bg-green-500 rounded-full"></span>
+                            <span className="text-base font-black text-green-700 uppercase">
+                              ✅ Completed
+                            </span>
+                          </>
+                        )}
+                        {!["pending", "in-progress", "completed"].includes(
+                          myTasks?.status
+                        ) && (
+                          <>
+                            <span className="w-3 h-3 bg-gray-500 rounded-full"></span>
+                            <span className="text-base font-black text-gray-700 capitalize">
+                              {myTasks?.status}
+                            </span>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Details Section - Two Column Layout */}
-              <div className="grid grid-cols-2 gap-3 mb-4">
-                {/* ASSIGNEE */}
-                <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border-2 border-blue-300">
-                  <p className="text-xs text-blue-700 font-bold tracking-wider mb-2">👤 ASSIGNEE</p>
-                  <p className="text-sm font-bold text-blue-900 capitalize line-clamp-2">
-                    {myTasks?.assigneeName || "🔄 Unassigned"}
-                  </p>
+                {/* Details Section - Two Column Layout */}
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  {/* ASSIGNEE */}
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border-2 border-blue-300">
+                    <p className="text-xs text-blue-700 font-bold tracking-wider mb-2">
+                      👤 ASSIGNEE
+                    </p>
+                    <p className="text-sm font-bold text-blue-900 capitalize line-clamp-2">
+                      {myTasks?.assigneeName || "🔄 Unassigned"}
+                    </p>
+                  </div>
+
+                  {/* STEP NAME */}
+                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border-2 border-purple-300">
+                    <p className="text-xs text-purple-700 font-bold tracking-wider mb-2">
+                      📌 STEP
+                    </p>
+                    <p className="text-sm font-bold text-purple-900 capitalize line-clamp-2">
+                      {myTasks?.name}
+                    </p>
+                  </div>
                 </div>
 
-                {/* STEP NAME */}
-                <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border-2 border-purple-300">
-                  <p className="text-xs text-purple-700 font-bold tracking-wider mb-2">📌 STEP</p>
-                  <p className="text-sm font-bold text-purple-900 capitalize line-clamp-2">
-                    {myTasks?.name}
-                  </p>
+                {/* Action Buttons */}
+                <div className="space-y-2 mb-3">
+                  {myTasks?.assignee === user?._id && !isFinished && (
+                    <>
+                      <button
+                        onClick={() => (
+                          setStepNumber(myTasks._id), setStatusUpdate(true)
+                        )}
+                        className="w-full px-4 py-2 bg-gradient-to-r from-primary_colors to-blue-600 text-white text-xs font-bold rounded-lg hover:shadow-lg transition-all hover:scale-105"
+                      >
+                        ✏️ UPDATE STATUS
+                      </button>
+                    </>
+                  )}
+                </div>
+
+                {/* Timer Controls */}
+                <div className="bg-gradient-to-r from-green-50 to-green-100 p-3 rounded-lg border-2 border-green-300 flex gap-2 items-center">
+                  <span className="text-green-800 font-bold text-sm flex-shrink-0">
+                    ⏱️ Timer:
+                  </span>
+                  <button
+                    onClick={() => setActiveTaskId(myTasks._id)}
+                    className="flex-1 px-3 py-2 bg-green-500 text-white rounded font-bold text-xs hover:bg-green-600 transition-all hover:scale-105"
+                  >
+                    ▶ START
+                  </button>
+                  <button
+                    onClick={() => setActiveTaskId(null)}
+                    className="flex-1 px-3 py-2 bg-red-500 text-white rounded font-bold text-xs hover:bg-red-600 transition-all hover:scale-105"
+                  >
+                    ⏹ STOP
+                  </button>
                 </div>
               </div>
-
-              {/* Action Buttons */}
-              <div className="space-y-2 mb-3">
-                {myTasks?.assignee === user?._id && !isFinished && (
-                  <>
-                    <button
-                      onClick={() => (
-                        setStepNumber(myTasks._id), setStatusUpdate(true)
-                      )}
-                      className="w-full px-4 py-2 bg-gradient-to-r from-primary_colors to-blue-600 text-white text-xs font-bold rounded-lg hover:shadow-lg transition-all hover:scale-105"
-                    >
-                      ✏️ UPDATE STATUS
-                    </button>
-                    <button
-                      onClick={() => {
-                        setStepNumber(myTasks._id);
-                        setAssigneeUpdate(true);
-                      }}
-                      className="w-full px-4 py-2 bg-gradient-to-r from-primary_colors to-blue-600 text-white text-xs font-bold rounded-lg hover:shadow-lg transition-all hover:scale-105"
-                    >
-                      ➜ ASSIGN NEXT STEP
-                    </button>
-                  </>
-                )}
-              </div>
-
-              {/* Timer Controls */}
-              <div className="bg-gradient-to-r from-green-50 to-green-100 p-3 rounded-lg border-2 border-green-300 flex gap-2 items-center">
-                <span className="text-green-800 font-bold text-sm flex-shrink-0">⏱️ Timer:</span>
-                <button
-                  onClick={() => setActiveTaskId(myTasks._id)}
-                  className="flex-1 px-3 py-2 bg-green-500 text-white rounded font-bold text-xs hover:bg-green-600 transition-all hover:scale-105"
-                >
-                  ▶ START
-                </button>
-                <button
-                  onClick={() => setActiveTaskId(null)}
-                  className="flex-1 px-3 py-2 bg-red-500 text-white rounded font-bold text-xs hover:bg-red-600 transition-all hover:scale-105"
-                >
-                  ⏹ STOP
-                </button>
+            ))
+          ) : (
+            <div className="w-full py-12 flex items-center justify-center">
+              <div className="text-center">
+                <p className="text-lg text-gray-500 font-semibold">
+                  📭 No current or upcoming tasks
+                </p>
+                <p className="text-sm text-gray-400 mt-1">
+                  All tasks are completed
+                </p>
               </div>
             </div>
-          ))
-        ) : (
-          <div className="w-full py-12 flex items-center justify-center">
-            <div className="text-center">
-              <p className="text-lg text-gray-500 font-semibold">📭 No current or upcoming tasks</p>
-              <p className="text-sm text-gray-400 mt-1">All tasks are completed</p>
-            </div>
-          </div>
-        )}
+          )}
         </div>
 
         {/* Documents Section */}
@@ -396,14 +439,18 @@ const RightSide = ({ data, cb, application }) => {
                         className="w-16 border-2 border-gray-300 p-2 rounded-lg hover:border-primary_colors transition-all"
                       />
                     </Link>
-                    <span className="mt-2 font-semibold text-gray-700 truncate max-w-16">{items?.name}</span>
+                    <span className="mt-2 font-semibold text-gray-700 truncate max-w-16">
+                      {items?.name}
+                    </span>
                   </div>
                 </Tippy>
               ))
             ) : (
               <div className="w-full flex items-center justify-center py-8">
                 <div className="text-center">
-                  <p className="text-gray-500 font-semibold">📂 No documents available</p>
+                  <p className="text-gray-500 font-semibold">
+                    📂 No documents available
+                  </p>
                 </div>
               </div>
             )}
@@ -438,19 +485,19 @@ const RightSide = ({ data, cb, application }) => {
                   style={{ padding: "12px" }}
                 >
                   <Mention
-                trigger="@"
-                data={employeeData.map((emp) => ({
-                  id: emp._id,
-                  display: emp.name,
-                }))}
-                className="mentions__mention"
-              />
-            </MentionsInput>
-            <button className="absolute bottom-3 right-3 px-4 py-2 bg-primary_colors text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition-all">
-              Send
-            </button>
-          </form>
-        </div>
+                    trigger="@"
+                    data={employeeData.map((emp) => ({
+                      id: emp._id,
+                      display: emp.name,
+                    }))}
+                    className="mentions__mention"
+                  />
+                </MentionsInput>
+                <button className="absolute bottom-3 right-3 px-4 py-2 bg-primary_colors text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition-all">
+                  Send
+                </button>
+              </form>
+            </div>
           )}
 
           {/* Chat Display */}
@@ -463,18 +510,22 @@ const RightSide = ({ data, cb, application }) => {
                       {items?.commentor}
                     </h1>
                     <h1 className="text-xs text-gray-400">
-                      {new Date(items?.createdAt).toLocaleString('en-IN')}
+                      {new Date(items?.createdAt).toLocaleString("en-IN")}
                     </h1>
                   </div>
                   <div className="bg-gradient-to-r from-primary_colors to-blue-500 p-4 mt-2 rounded-xl shadow-sm">
-                    <p className="text-sm text-white break-words leading-relaxed">{items?.comment}</p>
+                    <p className="text-sm text-white break-words leading-relaxed">
+                      {items?.comment}
+                    </p>
                   </div>
                 </div>
               ))
             ) : (
               <div className="w-full h-40 flex items-center justify-center">
                 <div className="text-center">
-                  <p className="text-gray-400 font-semibold">💭 No messages yet</p>
+                  <p className="text-gray-400 font-semibold">
+                    💭 No messages yet
+                  </p>
                 </div>
               </div>
             )}
