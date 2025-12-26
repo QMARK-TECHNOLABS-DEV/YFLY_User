@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DateFormat from "../../utils/DateFormat";
 
 import { useNavigate } from "react-router-dom";
@@ -16,6 +16,22 @@ const CommonTable = ({ data, page, entries, getData }) => {
   const [deleteModal, setDeleteModal] = useState(false);
   const [application, setApplication] = useState({});
   const navigate = useNavigate();
+
+  // DEBUG: inspect sample row to ensure deadline is present
+  useEffect(() => {
+    if (data && data.length) {
+      console.log("[CommonTable] sample row:", data[0]);
+    }
+  }, [data]);
+
+  // Format phase label to Title Case
+  const formatPhaseLabel = (p) => {
+    if (!p) return "";
+    return p
+      .split(" ")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+  };
 
   const handleDelete = (data) => {
     // console.log("applictn Data", data)
@@ -39,7 +55,6 @@ const CommonTable = ({ data, page, entries, getData }) => {
             <th className="px-6 py-4">Date Created</th>
             <th className="px-6 py-4">Student Name</th>
             <th className="px-6 py-4">Country</th>
-            <th className="px-6 py-4">Intake</th>
             <th className="px-6 py-4">Application Status</th>
             <th className="px-6 py-4">Deadline</th>
             <th className="px-6 py-4">Assignee</th>
@@ -64,18 +79,11 @@ const CommonTable = ({ data, page, entries, getData }) => {
                 <td className="px-6 py-4">
                   {items?.country ? items?.country : "NIL"}
                 </td>
-                <td className="px-6 py-4 truncate">
-                  {items?.intakes?.length > 0
-                    ? items?.intakes?.length > 1
-                      ? items?.intakes[0] + " +more"
-                      : items?.intakes[0]
-                    : "NIL"}
-                </td>
 
                 <td className="px-6 py-4">
                   {items?.phase ? (
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${
+                      className={`px-3 py-1 rounded-full text-sm font-semibold whitespace-nowrap inline-flex items-center justify-center ${
                         items?.phase === "pending"
                           ? "bg-yellow-100 text-yellow-800"
                           : items?.phase === "ongoing"
@@ -88,19 +96,51 @@ const CommonTable = ({ data, page, entries, getData }) => {
                           ? "bg-orange-100 text-orange-800"
                           : items?.phase === "not-enrolled"
                           ? "bg-gray-100 text-gray-800"
+                          : items?.phase === "offer letter waiting"
+                          ? "bg-yellow-100 text-yellow-800 ring-1 ring-yellow-200"
+                          : items?.phase === "offer letter received"
+                          ? "bg-green-100 text-green-800"
                           : "bg-gray-100 text-gray-800"
                       }`}
                     >
-                      {items?.phase}
+                      {items?.phase?.startsWith("offer letter") ? (
+                        <div className="flex flex-col items-center leading-tight">
+                          <span className="text-[10px] leading-none">
+                            Offer Letter
+                          </span>
+                          <span className="text-xs font-semibold leading-none">
+                            {items?.phase?.includes("received")
+                              ? "Received"
+                              : "Waiting"}
+                          </span>
+                        </div>
+                      ) : (
+                        formatPhaseLabel(items?.phase)
+                      )}
                     </span>
                   ) : (
                     "NIL"
                   )}
                 </td>
                 <td className="px-6 py-4">
-                  <span className="px-3 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded-lg">
-                    ACTIVE
-                  </span>
+                  {(() => {
+                    const d = items?.deadline;
+                    if (!d)
+                      return (
+                        <span className="text-xs text-gray-500">Not set</span>
+                      );
+                    const dt = new Date(d);
+                    if (isNaN(dt.valueOf()))
+                      return (
+                        <span className="text-xs text-gray-500">Not set</span>
+                      );
+                    const day = String(dt.getDate()).padStart(2, "0");
+                    const mon = dt.toLocaleString("en-US", { month: "short" });
+                    const yr = dt.getFullYear();
+                    return (
+                      <span className="text-sm font-semibold text-gray-800 whitespace-nowrap">{`${day}-${mon}-${yr}`}</span>
+                    );
+                  })()}
                 </td>
                 <td className="px-6 py-4">
                   {/* {items?.assignee ? items?.assigneeName : "NIL"} */}
@@ -128,7 +168,9 @@ const CommonTable = ({ data, page, entries, getData }) => {
 
                 <td className="px-6 py-4">
                   <button
-                    onClick={() => navigate(`/applications/stepper/${items?._id}`)}
+                    onClick={() =>
+                      navigate(`/applications/stepper/${items?._id}`)
+                    }
                     className="px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-all hover:scale-105"
                   >
                     View

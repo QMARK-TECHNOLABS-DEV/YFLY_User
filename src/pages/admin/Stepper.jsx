@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getAnApplicationRoute } from "../../utils/Endpoint";
 import ApplicationCard from "../../components/application/ApplicationCard";
+import DateFormat from "../../utils/DateFormat";
 import EmptyData from "../../components/loading/EmptyData";
 import ReqLoader from "../../components/loading/ReqLoader";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
@@ -70,6 +71,13 @@ const Stepper = () => {
           </div>
 
           <div className="flex  flex-col justify-start w-full">
+            <h5 className="font-bold">Deadline</h5>
+            <h5 className="text-sm capitalize">
+              {data?.deadline ? DateFormat(data.deadline) : "Not set"}
+            </h5>
+          </div>
+
+          <div className="flex  flex-col justify-start w-full">
             <h5 className="font-bold">Created Date</h5>
             <h5 className="text-sm capitalize">
               {data?.createdAt?.split("T")[0]}
@@ -79,12 +87,9 @@ const Stepper = () => {
           <div className="flex  flex-col justify-start items-center w-full">
             <h5 className="font-bold">Add new</h5>
             <h5 className="text-sm capitalize cursor-pointer">
-              <MdAddCircle size={23}
-              onClick={()=> setModal(true)}
-              />
+              <MdAddCircle size={23} onClick={() => setModal(true)} />
             </h5>
           </div>
-
         </div>
       </div>
 
@@ -93,7 +98,11 @@ const Stepper = () => {
         {data?.steppers && data?.steppers.length > 0 ? (
           data?.steppers.map((items, i) => (
             <div className="w-full md:w-[310px]">
-              <ApplicationCard data={items} getData={getApplication} />
+              <ApplicationCard
+                data={items}
+                getData={getApplication}
+                applicationDeadline={data?.deadline}
+              />
             </div>
           ))
         ) : (
@@ -105,11 +114,13 @@ const Stepper = () => {
 
       {loader && <ReqLoader />}
 
-      {
-        modal 
-        &&
-        <AddStepper application={data} setModal={setModal} cb={getApplication}/>
-      }
+      {modal && (
+        <AddStepper
+          application={data}
+          setModal={setModal}
+          cb={getApplication}
+        />
+      )}
     </div>
   );
 };

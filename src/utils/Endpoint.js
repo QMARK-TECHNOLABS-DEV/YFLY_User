@@ -6,6 +6,7 @@ export const baseUrl = process.env.REACT_APP_API_URL;
 // DEVELOPMENT BASE URL
 // export const baseUrl = "https://yfly-server.onrender.com";
 // export const baseUrl = "https://yflydevserver.qmarkdesk.com"
+// export const baseUrl = "http://localhost:8800";
 
 // Login page
 export const loginPost = "/api/auth/login";
@@ -173,6 +174,8 @@ export const getFollowUp = "/api/data/single?name=followup method";
 
 export const notifyRoute = "/api/notification";
 export const notifyEmployeeRoute = "/api/employee/notification";
+// Student notification routes (mounted under /api/student)
+export const notifyStudentRoute = "/api/student/notification";
 
 export const notification = "/api/notification/send";
 

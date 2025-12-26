@@ -4,6 +4,8 @@ import {
   createApplicationRoute,
   getEmployeesRoute,
   getNamesOfStudentsRoute,
+  getAllApplications,
+  updateApplicationRoute,
 } from "../../utils/Endpoint";
 import { Intake, countries } from "../../data/Dashboard";
 import { useSelector } from "react-redux";
@@ -25,6 +27,7 @@ const AddModal = ({ setModal, cb }) => {
     creator: user?._id,
     studentId: "",
     country: "",
+    deadline: "",
     uniBased: [
       {
         intake: "",
@@ -65,7 +68,7 @@ const AddModal = ({ setModal, cb }) => {
       setEmployee(response?.data);
     } catch (error) {
       console.log(error);
-    } 
+    }
   };
 
   // Handle changes in dynamic university inputs
@@ -134,18 +137,57 @@ const AddModal = ({ setModal, cb }) => {
   // On Submit
   const SubmitHandler = async (e) => {
     e.preventDefault();
- 
+
     try {
-      setLoader(true)
+      setLoader(true);
       const response = await axios.post(createApplicationRoute, formData);
-      console.log(response)
+      console.log(response);
       if (response?.status === 200) {
         toast.success(response?.data?.msg);
+
+        // If a deadline was provided, the create endpoint doesn't persist it on create
+        // (backend creates application without reading deadline). To adapt without changing
+        // backend, fetch recent applications and update the newly created item with the deadline.
+        if (formData.deadline) {
+          try {
+            const listRes = await axios.get(
+              `${getAllApplications}?page=1&entries=10`
+            );
+            const apps = listRes?.data || [];
+            // Find a recent application for the selected student (created within last 60s)
+            const now = Date.now();
+            const candidate = apps.find((a) => {
+              try {
+                const createdAt = new Date(a.createdAt).getTime();
+                return (
+                  String(a.studentId) === String(formData.studentId) &&
+                  Math.abs(now - createdAt) < 60000
+                );
+              } catch (e) {
+                return false;
+              }
+            });
+
+            if (candidate) {
+              await axios.put(updateApplicationRoute, {
+                applicationId: candidate._id,
+                deadline: formData.deadline,
+              });
+            } else {
+              console.warn(
+                "Could not find created application to attach deadline. Consider increasing fetch window or returning created id from backend."
+              );
+            }
+          } catch (err) {
+            console.error("Failed to set deadline after create:", err);
+          }
+        }
+
         cb();
         setModal(false);
       }
     } catch (error) {
-      console.log(error)
+      console.log(error);
       toast.error(error?.response?.data?.msg || "Something Went Wrong");
     } finally {
       setLoader(false);
@@ -198,6 +240,15 @@ const AddModal = ({ setModal, cb }) => {
                   </option>
                 ))}
               </select>
+
+              <input
+                type="date"
+                name="deadline"
+                className="w-full border rounded p-2 focus:outline-none"
+                title="Deadline"
+                onChange={ChangeHandler}
+                value={formData.deadline}
+              />
             </div>
 
             <div className="w-full gap-3 max-h-[50vh] overflow-y-scroll">

@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { dashData, getEmployeesRoute } from "../../utils/Endpoint";
+import {
+  dashData,
+  getEmployeesRoute,
+  getNamesOfStudentsRoute,
+} from "../../utils/Endpoint";
 import { FaUserGraduate } from "react-icons/fa";
 import { MdManageAccounts } from "react-icons/md";
 import { Link } from "react-router-dom";
@@ -13,12 +17,13 @@ import TestExamNotificationModal from "../../components/notification/TestExamNot
 
 const Dashboard = () => {
   const axios = useAxiosPrivate();
-  
+
   const [data, setData] = useState([]);
   const [modal, setModal] = useState(false);
   const [empModal, setEmpModal] = useState(false);
   const [testExamModal, setTestExamModal] = useState(false);
   const [employees, setEmployees] = useState([]);
+  const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(false);
 
   // @DCS All Card Data
@@ -50,9 +55,22 @@ const Dashboard = () => {
       });
   }, []);
 
-  useEffect(()=>{
-    window.scroll(0,0)
-  },[])
+  // Fetch students (names) for selection in notifications
+  useEffect(() => {
+    axios
+      .get(getNamesOfStudentsRoute)
+      .then((res) => {
+        // API returns names list under result in some endpoints
+        setStudents(res?.data?.result || res.data || []);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, []);
+
+  useEffect(() => {
+    window.scroll(0, 0);
+  }, []);
 
   return (
     <>
@@ -143,9 +161,10 @@ const Dashboard = () => {
         <RegistrationForm setModal={setEmpModal} entity="Employee" />
       )}
       {testExamModal && (
-        <TestExamNotificationModal 
-          setModal={setTestExamModal} 
+        <TestExamNotificationModal
+          setModal={setTestExamModal}
           employees={employees}
+          students={students}
         />
       )}
     </>

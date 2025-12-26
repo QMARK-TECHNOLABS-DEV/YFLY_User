@@ -3,7 +3,7 @@ import { IoCloseCircle } from "react-icons/io5";
 import { toast } from "react-toastify";
 import { useNotification } from "../../hooks/useNotification";
 
-const TestExamNotificationModal = ({ setModal, employees }) => {
+const TestExamNotificationModal = ({ setModal, employees, students = [] }) => {
   const { sendTestExamNotification } = useNotification();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -13,7 +13,12 @@ const TestExamNotificationModal = ({ setModal, employees }) => {
     date: "",
     time: "",
     duration: "",
-    notifyUsers: [],
+    // separate selections for employees and students
+    notifyEmployees: [],
+    notifyStudents: [],
+    // search strings for filtering lists
+    employeeSearch: "",
+    studentSearch: "",
   });
 
   const handleInputChange = (e) => {
@@ -24,27 +29,49 @@ const TestExamNotificationModal = ({ setModal, employees }) => {
     }));
   };
 
-  const handleUserSelection = (userId) => {
+  const handleEmployeeSelection = (id) => {
     setFormData((prev) => ({
       ...prev,
-      notifyUsers: prev.notifyUsers.includes(userId)
-        ? prev.notifyUsers.filter((id) => id !== userId)
-        : [...prev.notifyUsers, userId],
+      notifyEmployees: prev.notifyEmployees.includes(id)
+        ? prev.notifyEmployees.filter((i) => i !== id)
+        : [...prev.notifyEmployees, id],
     }));
   };
 
-  const handleSelectAll = () => {
-    if (formData.notifyUsers.length === employees?.length) {
-      setFormData((prev) => ({
-        ...prev,
-        notifyUsers: [],
-      }));
+  const handleStudentSelection = (id) => {
+    setFormData((prev) => ({
+      ...prev,
+      notifyStudents: prev.notifyStudents.includes(id)
+        ? prev.notifyStudents.filter((i) => i !== id)
+        : [...prev.notifyStudents, id],
+    }));
+  };
+
+  const handleSelectAllEmployees = () => {
+    if (formData.notifyEmployees.length === employees?.length) {
+      setFormData((prev) => ({ ...prev, notifyEmployees: [] }));
     } else {
       setFormData((prev) => ({
         ...prev,
-        notifyUsers: employees?.map((emp) => emp._id) || [],
+        notifyEmployees: employees?.map((emp) => emp._id) || [],
       }));
     }
+  };
+
+  const handleSelectAllStudents = () => {
+    if (formData.notifyStudents.length === students?.length) {
+      setFormData((prev) => ({ ...prev, notifyStudents: [] }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        notifyStudents: students?.map((st) => st._id) || [],
+      }));
+    }
+  };
+
+  const handleSearchChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -61,8 +88,30 @@ const TestExamNotificationModal = ({ setModal, employees }) => {
       return;
     }
 
-    if (formData.notifyUsers.length === 0) {
-      toast.error("Please select at least one user to notify");
+    const totalSelected =
+      (formData.notifyEmployees?.length || 0) +
+      (formData.notifyStudents?.length || 0);
+    if (totalSelected === 0) {
+      toast.error("Please select at least one employee or student to notify");
+      return;
+    }
+
+    const validIds = [
+      ...(employees?.map((e) => String(e._id)) || []),
+      ...(students?.map((s) => String(s._id)) || []),
+    ];
+
+    const selectedIds = [
+      ...(formData.notifyEmployees || []),
+      ...(formData.notifyStudents || []),
+    ];
+
+    const invalidIds = selectedIds.filter(
+      (id) => !validIds.includes(String(id))
+    );
+
+    if (invalidIds.length > 0) {
+      toast.error(`Invalid selection: ${invalidIds.join(", ")}`);
       return;
     }
 
@@ -79,7 +128,8 @@ const TestExamNotificationModal = ({ setModal, employees }) => {
       };
 
       const result = await sendTestExamNotification(
-        formData.notifyUsers,
+        formData.notifyEmployees || [],
+        formData.notifyStudents || [],
         testExamData
       );
 
@@ -94,10 +144,22 @@ const TestExamNotificationModal = ({ setModal, employees }) => {
           date: "",
           time: "",
           duration: "",
-          notifyUsers: [],
+          notifyEmployees: [],
+          notifyStudents: [],
+          employeeSearch: "",
+          studentSearch: "",
         });
       } else {
-        toast.error(result.message);
+        // Log detailed server response for debugging
+        console.error(
+          "[Notification] sendTestExamNotification failed:",
+          result
+        );
+        // Show informative toast to user including status when available
+        const statusPart = result?.status ? ` (status ${result.status})` : "";
+        toast.error(
+          `${result.message || "Failed to send notification"}${statusPart}`
+        );
       }
     } catch (error) {
       console.log("Error:", error);
@@ -123,7 +185,8 @@ const TestExamNotificationModal = ({ setModal, employees }) => {
             📝 Test/Exam Notification
           </h1>
           <p className="text-gray-600 text-sm">
-            Send a test or exam update notification to selected users
+            Send a test/exam update notification to selected employees or
+            students
           </p>
         </div>
 
@@ -218,55 +281,144 @@ const TestExamNotificationModal = ({ setModal, employees }) => {
             </div>
           </div>
 
-          {/* User Selection */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <label className="block text-sm font-semibold text-gray-700">
-                Select Users to Notify *
-              </label>
-              <button
-                type="button"
-                onClick={handleSelectAll}
-                className="text-xs text-primary_colors hover:text-blue-700 font-semibold"
-              >
-                {formData.notifyUsers.length === employees?.length
-                  ? "Deselect All"
-                  : "Select All"}
-              </button>
+          {/* Employee & Student Selections */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Employees Column */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-semibold text-gray-700">
+                  Select Employees to Notify *
+                </label>
+                <button
+                  type="button"
+                  onClick={handleSelectAllEmployees}
+                  className="text-xs text-primary_colors hover:text-blue-700 font-semibold"
+                >
+                  {formData.notifyEmployees.length === employees?.length
+                    ? "Deselect All"
+                    : "Select All"}
+                </button>
+              </div>
+
+              <input
+                type="text"
+                name="employeeSearch"
+                value={formData.employeeSearch}
+                onChange={handleSearchChange}
+                placeholder="Type to search employees..."
+                className="w-full mb-2 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary_colors"
+              />
+
+              <div className="border border-gray-300 rounded-lg p-3 max-h-48 overflow-y-auto bg-gray-50">
+                {employees && employees.length > 0 ? (
+                  <div className="space-y-2">
+                    {(employees || [])
+                      .filter((e) =>
+                        e?.name
+                          ?.toLowerCase()
+                          .includes(
+                            formData.employeeSearch?.toLowerCase() || ""
+                          )
+                      )
+                      .map((employee) => (
+                        <label
+                          key={employee._id}
+                          className="flex items-center gap-2 cursor-pointer hover:bg-white p-2 rounded"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={formData.notifyEmployees.includes(
+                              employee._id
+                            )}
+                            onChange={() =>
+                              handleEmployeeSelection(employee._id)
+                            }
+                            className="cursor-pointer"
+                          />
+                          <span className="text-sm text-gray-700 font-medium">
+                            {employee.name}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            ({employee.role})
+                          </span>
+                        </label>
+                      ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500 text-center py-4">
+                    No employees available
+                  </p>
+                )}
+              </div>
+              <p className="text-xs text-gray-600 mt-2">
+                Selected Employees: {formData.notifyEmployees.length}
+              </p>
             </div>
 
-            <div className="border border-gray-300 rounded-lg p-3 max-h-48 overflow-y-auto bg-gray-50">
-              {employees && employees.length > 0 ? (
-                <div className="space-y-2">
-                  {employees.map((employee) => (
-                    <label
-                      key={employee._id}
-                      className="flex items-center gap-2 cursor-pointer hover:bg-white p-2 rounded"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={formData.notifyUsers.includes(employee._id)}
-                        onChange={() => handleUserSelection(employee._id)}
-                        className="cursor-pointer"
-                      />
-                      <span className="text-sm text-gray-700 font-medium">
-                        {employee.name}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        ({employee.role})
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-gray-500 text-center py-4">
-                  No users available
-                </p>
-              )}
+            {/* Students Column */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-semibold text-gray-700">
+                  Select Students to Notify *
+                </label>
+                <button
+                  type="button"
+                  onClick={handleSelectAllStudents}
+                  className="text-xs text-primary_colors hover:text-blue-700 font-semibold"
+                >
+                  {formData.notifyStudents.length === students?.length
+                    ? "Deselect All"
+                    : "Select All"}
+                </button>
+              </div>
+
+              <input
+                type="text"
+                name="studentSearch"
+                value={formData.studentSearch}
+                onChange={handleSearchChange}
+                placeholder="Type to search students..."
+                className="w-full mb-2 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary_colors"
+              />
+
+              <div className="border border-gray-300 rounded-lg p-3 max-h-48 overflow-y-auto bg-gray-50">
+                {students && students.length > 0 ? (
+                  <div className="space-y-2">
+                    {(students || [])
+                      .filter((s) =>
+                        s?.name
+                          ?.toLowerCase()
+                          .includes(formData.studentSearch?.toLowerCase() || "")
+                      )
+                      .map((student) => (
+                        <label
+                          key={student._id}
+                          className="flex items-center gap-2 cursor-pointer hover:bg-white p-2 rounded"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={formData.notifyStudents.includes(
+                              student._id
+                            )}
+                            onChange={() => handleStudentSelection(student._id)}
+                            className="cursor-pointer"
+                          />
+                          <span className="text-sm text-gray-700 font-medium">
+                            {student.name}
+                          </span>
+                        </label>
+                      ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500 text-center py-4">
+                    No students available
+                  </p>
+                )}
+              </div>
+              <p className="text-xs text-gray-600 mt-2">
+                Selected Students: {formData.notifyStudents.length}
+              </p>
             </div>
-            <p className="text-xs text-gray-600 mt-2">
-              Selected: {formData.notifyUsers.length} user(s)
-            </p>
           </div>
 
           {/* Buttons */}
