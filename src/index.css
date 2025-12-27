@@ -2,7 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
-
+/* Default: hide scrollbars globally for aesthetic consistency */
 ::-webkit-scrollbar {
   display: none;
+}
+
+/* Override: make scrollbar visible for reminder box specifically */
+.reminder-scroll::-webkit-scrollbar {
+  display: block;
+  width: 10px;
+}
+
+.reminder-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.reminder-scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(107, 114, 128, 0.35); /* gray-400 like */
+  border-radius: 9999px;
+}
+
+/* Firefox: thin scrollbar for reminder box */
+.reminder-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(107, 114, 128, 0.35) transparent;
 }
