@@ -82,11 +82,11 @@ const PhaseChanger = ({ data, setData, getTableData, setModal }) => {
           >
             {/* File Name and submit */}
             <div className="w-full p-5">
-              <h1 className="font-bold mb-4 text-primary_colors">
-                Update the Application State of {data?.studentName}
+              <h1 className="font-bold text-center mb-4 text-primary_colors">
+                Update the Deadline of {data?.studentName}
               </h1>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
+              <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+                {/* <div>
                   <label
                     htmlFor=""
                     className="text-sm text-gray-600 font-semibold"
@@ -115,16 +115,16 @@ const PhaseChanger = ({ data, setData, getTableData, setModal }) => {
                       ))}
                     </select>
                   </div>
-                </div>
+                </div> */}
 
                 <div>
-                  <label
+                  {/* <label
                     htmlFor=""
                     className="text-sm text-gray-600 font-semibold"
                   >
                     Update Deadline
-                  </label>
-                  <div className="mt-1">
+                  </label> */}
+                  <div className="mt-1 ">
                     <input
                       type="date"
                       value={deadline}

@@ -2,9 +2,14 @@ import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getAnApplicationRoute, getStepper } from "../../utils/Endpoint";
 import { useSelector } from "react-redux";
+import DateFormat from "../../utils/DateFormat";
+import { toast } from "react-toastify";
 
 import RightSide from "./tracking/RightSide";
+import AssignStepModal from "./AssignStepModal";
+import StepNavigatorModal from "./StepNavigatorModal";
 import ReqLoader from "../loading/ReqLoader";
+import PhaseChanger from "../modals/PhaseChanger"; //for updating the deadline
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 
 const Application = () => {
@@ -60,6 +65,10 @@ const Application = () => {
   // console.log(application);
 
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [editModal, setEditModal] = useState(false);
+  const [assignModal, setAssignModal] = useState(false);
+  const [navModal, setNavModal] = useState(false);
+  const [targetStepId, setTargetStepId] = useState(null);
   // Selected filter by admin: all / counsellors / counsellors_operations / operations / operations_freelance / counsellors_freelance / freelance / case_closure
   const [selectedFilter, setSelectedFilter] = useState("all");
   const user = useSelector((state) => state?.auth?.userInfo);
@@ -284,9 +293,37 @@ const Application = () => {
     }
   }, [stepper, selectedFilter]);
 
+  // When a target step id is set (by the navigator), focus that step after filteredSteps refresh
+  useEffect(() => {
+    if (!targetStepId) return;
+    const idx = filteredSteps.findIndex(
+      (s) => String(s?._id) === String(targetStepId)
+    );
+    if (idx !== -1) {
+      setCurrentIndex(idx);
+    } else {
+      // step not found within current filteredSteps
+      // try resetting filter to 'all' and attempt again on next render
+      if (selectedFilter !== "all") {
+        setSelectedFilter("all");
+        return;
+      }
+      // still not found
+      toast.warning("Selected step not found in this application");
+    }
+    setTargetStepId(null);
+  }, [filteredSteps, targetStepId]);
+
   const stepsLen = filteredSteps?.length || 0;
   const currentStep = filteredSteps?.[currentIndex];
   const singleStepper = { ...stepper, steps: currentStep ? [currentStep] : [] };
+
+  const handleNavigateToStep = (stepId, category) => {
+    // set selectedFilter to all to ensure step is visible, then set target
+    setSelectedFilter("all");
+    setTargetStepId(stepId);
+    setNavModal(false);
+  };
 
   return (
     <div className="container mx-auto w-full min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pt-8 pb-32">
@@ -312,29 +349,61 @@ const Application = () => {
             </h5>
             <h5 className="text-lg capitalize font-bold">{data?.country}</h5>
           </div>
-          <div className="bg-white bg-opacity-10 backdrop-blur p-4 rounded-lg">
-            <h5 className="font-semibold text-sm text-gray-100 mb-1">Intake</h5>
-            <h5 className="text-lg capitalize font-bold">{stepper?.intake}</h5>
-          </div>
+
           <div className="bg-white bg-opacity-10 backdrop-blur p-4 rounded-lg">
             <h5 className="font-semibold text-sm text-gray-100 mb-1">
-              University
+              Deadline
             </h5>
             <h5 className="text-lg capitalize font-bold">
-              {stepper?.university}
+              {data?.deadline ? DateFormat(data.deadline) : "Not set"}
             </h5>
+            {user?.role === "admin" && (
+              <button
+                onClick={() => {
+                  setApplication(data);
+                  setEditModal(true);
+                }}
+                className="mt-3 bg-white text-primary_colors px-3 py-1 rounded text-sm font-semibold"
+              >
+                {data?.deadline ? "Update Deadline" : "Set Deadline"}
+              </button>
+            )}
           </div>
-          <div className="bg-white bg-opacity-10 backdrop-blur p-4 rounded-lg">
-            <h5 className="font-semibold text-sm text-gray-100 mb-1">
-              Program
-            </h5>
-            <h5 className="text-lg capitalize font-bold">{stepper?.program}</h5>
-          </div>
-          <div className="bg-white bg-opacity-10 backdrop-blur p-4 rounded-lg">
-            <h5 className="font-semibold text-sm text-gray-100 mb-1">
-              Through
-            </h5>
-            <h5 className="text-lg capitalize font-bold">{stepper?.through}</h5>
+          <div className="col-span-1 md:col-span-2 lg:col-span-3">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div className="bg-white bg-opacity-10 backdrop-blur p-4 rounded-lg">
+                <h5 className="font-semibold text-sm text-gray-100 mb-1">
+                  Intake
+                </h5>
+                <h5 className="text-lg capitalize font-bold">
+                  {stepper?.intake}
+                </h5>
+              </div>
+              <div className="bg-white bg-opacity-10 backdrop-blur p-4 rounded-lg">
+                <h5 className="font-semibold text-sm text-gray-100 mb-1">
+                  University
+                </h5>
+                <h5 className="text-lg capitalize font-bold">
+                  {stepper?.university}
+                </h5>
+              </div>
+              <div className="bg-white bg-opacity-10 backdrop-blur p-4 rounded-lg">
+                <h5 className="font-semibold text-sm text-gray-100 mb-1">
+                  Program
+                </h5>
+                <h5 className="text-lg capitalize font-bold">
+                  {stepper?.program}
+                </h5>
+              </div>
+              <div className="bg-white bg-opacity-10 backdrop-blur p-4 rounded-lg">
+                <h5 className="font-semibold text-sm text-gray-100 mb-1">
+                  Through
+                </h5>
+                <h5 className="text-lg capitalize font-bold">
+                  {stepper?.through}
+                </h5>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -408,6 +477,22 @@ const Application = () => {
                 >
                   Next ▶
                 </button>
+
+                {user?.role === "admin" && (
+                  <button
+                    onClick={() => setAssignModal(true)}
+                    className="px-3 py-2 ml-2 rounded-md text-sm font-semibold bg-green-600 text-white hover:bg-green-700"
+                  >
+                    ➕ Assign Step
+                  </button>
+                )}
+
+                <button
+                  onClick={() => setNavModal(true)}
+                  className="px-3 py-2 ml-2 rounded-md text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700"
+                >
+                  🔎 Go to Step
+                </button>
               </div>
             </div>
 
@@ -426,6 +511,34 @@ const Application = () => {
         </div>
       </div>
       {loader && <ReqLoader />}
+
+      {editModal && (
+        <PhaseChanger
+          data={application}
+          setData={setApplication}
+          getTableData={fnToCallGetFn}
+          setModal={setEditModal}
+        />
+      )}
+
+      {assignModal && (
+        <AssignStepModal
+          setModal={setAssignModal}
+          steps={stepper?.steps || []}
+          applicationData={application}
+          stepperData={stepper}
+          cb={fnToCallGetFn}
+        />
+      )}
+
+      {navModal && (
+        <StepNavigatorModal
+          setModal={setNavModal}
+          steps={stepper?.steps || []}
+          categoriesMapping={null}
+          onSelectStep={handleNavigateToStep}
+        />
+      )}
     </div>
   );
 };

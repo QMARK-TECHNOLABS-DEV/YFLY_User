@@ -102,6 +102,74 @@ export const useNotification = () => {
   );
 
   /**
+   * Send employee test/exam notification directly via employee notification endpoint
+   * Use when only students should be notified by an employee
+   */
+  const sendEmployeeTestExamNotification = useCallback(
+    async (studentIds = [], testExamData) => {
+      try {
+        const payload = {
+          title: `📝 ${testExamData.testName}`,
+          body: [
+            testExamData.description || "New test/exam update",
+            testExamData.date,
+            testExamData.time,
+          ]
+            .filter(Boolean)
+            .join(" - "),
+          route: testExamData.route || "/applications",
+          metadata: {
+            type: testExamData.type,
+            date: testExamData.date,
+            time: testExamData.time,
+            duration: testExamData.duration,
+          },
+          studentIdList: studentIds || [],
+        };
+
+        const response = await axiosPrivate.post(
+          `/api/employee/notification/create-exam`,
+          payload
+        );
+
+        if (response?.status === 200 || response?.status === 201) {
+          return {
+            success: true,
+            message:
+              response?.data?.message || "Notification sent successfully",
+          };
+        }
+
+        return {
+          success: false,
+          message:
+            response?.data?.message || `Unexpected status: ${response?.status}`,
+          status: response?.status,
+          responseData: response?.data,
+        };
+      } catch (error) {
+        console.error(
+          "[Notification] Error sending employee test exam notification:",
+          {
+            message: error?.message,
+            status: error?.response?.status,
+            responseData: error?.response?.data,
+          }
+        );
+        return {
+          success: false,
+          message:
+            error?.response?.data?.message ||
+            "Failed to send employee exam notification",
+          responseData: error?.response?.data,
+          status: error?.response?.status,
+        };
+      }
+    },
+    []
+  );
+
+  /**
    * Send application update notification
    */
   const sendApplicationNotification = useCallback(
@@ -140,6 +208,7 @@ export const useNotification = () => {
   return {
     sendNotification,
     sendTestExamNotification,
+    sendEmployeeTestExamNotification,
     sendApplicationNotification,
     sendTaskNotification,
   };

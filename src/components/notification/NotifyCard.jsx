@@ -58,36 +58,69 @@ const NotifyCard = ({
       />
 
       <div className="flex-1 min-w-0">
-        <Link
-          onClick={notificationHandler}
-          to={`${item?.route}`}
-          className="block"
-        >
-          <div className="flex items-start gap-2">
-            <span className="text-lg flex-shrink-0">{getNotificationIcon()}</span>
-            <div className="flex-1 min-w-0">
-              <h3 className="text-sm font-bold text-gray-800 truncate">
-                {item?.title}
-              </h3>
-              <p className="text-sm text-gray-600 text-wrap break-words">
-                {item?.body}
-              </p>
-              {item?.metadata && (
-                <div className="text-xs text-gray-500 mt-1 space-y-0.5">
-                  {item?.metadata?.date && (
-                    <p>📅 Date: {item?.metadata?.date}</p>
-                  )}
-                  {item?.metadata?.time && (
-                    <p>🕐 Time: {item?.metadata?.time}</p>
-                  )}
-                  {item?.metadata?.duration && (
-                    <p>⏱️ Duration: {item?.metadata?.duration} mins</p>
-                  )}
-                </div>
-              )}
+        {item?.notificationType === "test-exam" ? (
+          <div onClick={notificationHandler} className="block cursor-default">
+            <div className="flex items-start gap-2">
+              <span className="text-lg flex-shrink-0">
+                {getNotificationIcon()}
+              </span>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-bold text-gray-800 truncate">
+                  {item?.title}
+                </h3>
+                <p className="text-sm text-gray-600 text-wrap break-words">
+                  {item?.body}
+                </p>
+                {item?.metadata && (
+                  <div className="text-xs text-gray-500 mt-1 space-y-0.5">
+                    {item?.metadata?.date && (
+                      <p>📅 Date: {item?.metadata?.date}</p>
+                    )}
+                    {item?.metadata?.time && (
+                      <p>🕐 Time: {item?.metadata?.time}</p>
+                    )}
+                    {item?.metadata?.duration && (
+                      <p>⏱️ Duration: {item?.metadata?.duration} mins</p>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </Link>
+        ) : (
+          <Link
+            onClick={notificationHandler}
+            to={`${item?.route}`}
+            className="block"
+          >
+            <div className="flex items-start gap-2">
+              <span className="text-lg flex-shrink-0">
+                {getNotificationIcon()}
+              </span>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-bold text-gray-800 truncate">
+                  {item?.title}
+                </h3>
+                <p className="text-sm text-gray-600 text-wrap break-words">
+                  {item?.body}
+                </p>
+                {item?.metadata && (
+                  <div className="text-xs text-gray-500 mt-1 space-y-0.5">
+                    {item?.metadata?.date && (
+                      <p>📅 Date: {item?.metadata?.date}</p>
+                    )}
+                    {item?.metadata?.time && (
+                      <p>🕐 Time: {item?.metadata?.time}</p>
+                    )}
+                    {item?.metadata?.duration && (
+                      <p>⏱️ Duration: {item?.metadata?.duration} mins</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </Link>
+        )}
       </div>
 
       {!item?.isRead && (
