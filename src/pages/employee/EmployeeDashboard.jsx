@@ -3,11 +3,15 @@ import { useSelector } from "react-redux";
 import { FaUserGraduate } from "react-icons/fa";
 import { MdNotificationsActive } from "react-icons/md";
 import { Link } from "react-router-dom";
-import { getEmpTaskMetrics } from "../../utils/Endpoint";
+import {
+  getEmpTaskMetrics,
+  getNamesOfStudentsRoute,
+} from "../../utils/Endpoint";
 
 import Cards from "../../components/dashboard/Cards";
 import StudentLoader from "../../components/loading/StudentLoader";
 import RegistrationForm from "../../components/dashboard/RegistrationForm";
+import TestExamNotificationModal from "../../components/notification/TestExamNotificationModal";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 
 // Reminder box shows upcoming test/exam notifications within next 72 hours
@@ -94,6 +98,20 @@ const EmployeeDashboard = () => {
   const [dashData, setDashdata] = useState([]);
   const [loading, setLoading] = useState(false);
   const [modal, setModal] = useState(false);
+  const [testExamModal, setTestExamModal] = useState(false);
+  const [students, setStudents] = useState([]);
+
+  // Fetch students (names) for employee notification selection
+  useEffect(() => {
+    axios
+      .get(getNamesOfStudentsRoute)
+      .then((res) => {
+        setStudents(res?.data?.result || res.data || []);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
 
   useEffect(() => {
     window.scroll(0, 0);
@@ -150,9 +168,16 @@ const EmployeeDashboard = () => {
             <div className="flex flex-col justify-center items-center p-9">
               <button
                 onClick={() => setModal(!modal)}
-                className="me-2 p-2 px-4 text-normal bg-primary_colors text-white rounded-lg hover:scale-105 ease-in-out duration-200"
+                className="me-2 p-2 px-8 text-normal bg-primary_colors text-white rounded-lg hover:scale-105 ease-in-out duration-200"
               >
                 Register a New Student
+              </button>
+
+              <button
+                onClick={() => setTestExamModal(true)}
+                className="mt-3 p-2 px-4 text-normal bg-primary_colors text-white rounded-lg hover:scale-105 ease-in-out duration-200"
+              >
+                📝 Create Exam Notification
               </button>
             </div>
           </div>
@@ -164,6 +189,13 @@ const EmployeeDashboard = () => {
         </div>
       </div>
       {modal && <RegistrationForm setModal={setModal} entity="Student" />}
+      {testExamModal && (
+        <TestExamNotificationModal
+          setModal={setTestExamModal}
+          students={students}
+          showEmployees={false}
+        />
+      )}
     </div>
   );
 };

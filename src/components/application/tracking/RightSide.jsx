@@ -243,7 +243,7 @@ const RightSide = ({ data, cb, application }) => {
                 </div>
 
                 {/* Action Button */}
-                <div className="mb-3">
+                <div className="mb-3 flex flex-col gap-2">
                   {!isFinished &&
                     !(empTask?.assignee || empTask?.assigneeName) && (
                       <button
@@ -256,6 +256,18 @@ const RightSide = ({ data, cb, application }) => {
                         ➕ ASSIGN CURRENT STEP
                       </button>
                     )}
+
+                  {/* Allow admin to update status as well */}
+                  {!isFinished && empTask?.status !== "completed" && (
+                    <button
+                      onClick={() => (
+                        setStepNumber(empTask._id), setStatusUpdate(true)
+                      )}
+                      className="w-full px-4 py-2 bg-gradient-to-r from-primary_colors to-blue-600 text-white text-xs font-bold rounded-lg hover:shadow-lg transition-all hover:scale-105"
+                    >
+                      ✏️ UPDATE STATUS
+                    </button>
+                  )}
                 </div>
 
                 {/* Timer Controls */}

@@ -157,6 +157,9 @@ export const getAllMembersFromProject = "/api/project/get-members"; //<== + proj
 
 export const changePhaseOfApplication = "/api/application/phase-change"; //<== + application id
 
+// PUT - Update tution fee for an application (body: { tutionFee: true|false or "yes"|"no" })
+export const updateTutionFeeRoute = "/api/application/tution-fee"; //<== + application id
+
 // To get all applications of a student in student side dashboard
 export const getMyApplicationsRoute = "/api/student/get-my-applications"; //<== + student Id
 
