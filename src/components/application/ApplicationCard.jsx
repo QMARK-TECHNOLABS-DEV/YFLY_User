@@ -7,12 +7,23 @@ import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import { toast } from "react-toastify";
 import { deleteStepper } from "../../utils/Endpoint";
 
-
-const ApplicationCard = ({ data, getData }) => {
+const ApplicationCard = ({ data, getData, applicationDeadline }) => {
   // console.log(data);
   const navigate = useNavigate();
-  const [deleteModal, setDeleteModal] = useState(false)
+  const [deleteModal, setDeleteModal] = useState(false);
   // const [stepper, setStepper] = useState({})
+
+  // Use deadline from stepper if present, otherwise fallback to application-level deadline
+  const combinedDeadline = data?.deadline || applicationDeadline;
+
+  // Format phase label to Title Case
+  const formatPhaseLabel = (p) => {
+    if (!p) return "";
+    return p
+      .split(" ")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+  };
 
   const instance = useAxiosPrivate();
 
@@ -44,53 +55,142 @@ const ApplicationCard = ({ data, getData }) => {
   };
 
   const handleDelete = (e) => {
-    e.stopPropagation()
-    setDeleteModal(true)
-  }
+    e.stopPropagation();
+    setDeleteModal(true);
+  };
+
+  // Calculate deadline status
+  const getDeadlineStatus = () => {
+    // You can add deadline logic here if deadline field exists
+    // For now, we'll show a general deadline indicator
+    return "Active";
+  };
+
+  // Format date if available
+  const formatDate = (date) => {
+    if (!date) return "N/A";
+    return new Date(date).toLocaleDateString("en-IN", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
+  // Compute current step for display (if steps exist)
+  const stepsLen = data?.steps?.length || 0;
+  const currentIndex = (() => {
+    if (!stepsLen) return 0;
+    const pendingIndex = data.steps.findIndex((s) => s?.status === "pending");
+    if (pendingIndex !== -1) return pendingIndex;
+    const nextIdx = data.steps.findIndex((s) => s?.status !== "completed");
+    return nextIdx !== -1 ? nextIdx : 0;
+  })();
+  const currentStepName = data?.steps?.[currentIndex]?.name || null;
 
   return (
     <>
-    <div
-      onClick={(e) =>
-        navigate(`/applications/${data.applicationId}/${data._id}`)
-      }
-      className="relative p-8 bg-white rounded-lg shadow-lg w-full md:w-[310px] capitalize hover:scale-105 ease-in-out duration-200 cursor-pointer"
-    >
-      <h1 className="font-semibold text-primary_colors">
-        university:{" "}
-        <span className="font-medium text-sm">{data?.university}</span>
-      </h1>
-      <h1 className="font-semibold text-primary_colors">
-        Program:{" "}
-        <span className="font-medium text-sm">{data?.program}</span>
-      </h1>
-      <h1 className="font-semibold text-primary_colors">
-        Intake:{" "}
-        <span className="font-medium text-sm">{data?.intake}</span>
-      </h1>
-      <h1 className="mt-2 text-sm">
-        Partnership:{" "}
-        <span className="font-medium text-gray-500">{data?.partnership}</span>
-      </h1>
-      <h1 className="mt-2 text-sm">
-        Through:{" "}
-        <span className="font-medium text-gray-500">{data?.through}</span>
-      </h1>
-      <h1 className="mt-2 text-sm">
-        Total Steps:{" "}
-        <span className="font-medium text-gray-500">{data?.steps.length}</span>
-      </h1>
+      <div
+        onClick={(e) =>
+          navigate(`/applications/${data.applicationId}/${data._id}`)
+        }
+        className="relative p-5 bg-white rounded-lg shadow-md hover:shadow-lg w-full md:w-[320px] capitalize hover:scale-102 ease-in-out duration-200 cursor-pointer border-l-4 border-primary_colors overflow-hidden"
+      >
+        {/* Top Bar - Delete and Status */}
+        <div className="flex items-center justify-between mb-4">
+          <MdDeleteOutline
+            onClick={handleDelete}
+            size={20}
+            className="cursor-pointer text-red-600 hover:text-red-800 hover:scale-110 transition-all"
+          />
 
-      <MdDeleteOutline
-        onClick={handleDelete}
-        size={26}
-        className="absolute top-4 right-4 cursor-pointer hover:scale-105 ease-in-out duration-400 text-red-700"
-      />
+          <div className="text-right">
+            <p className="text-xs text-gray-500 font-semibold">Deadline</p>
+            <p className="text-xs font-semibold text-gray-800">
+              {combinedDeadline ? formatDate(combinedDeadline) : "Not set"}
+            </p>
+          </div>
+        </div>
 
-    </div>
-      {
-        deleteModal
-        &&
+        {/* University */}
+        <div className="mb-3">
+          <h1 className="font-bold text-sm text-primary_colors truncate">
+            {data?.university}
+          </h1>
+        </div>
+
+        {/* Program & Intake */}
+        <div className="grid grid-cols-2 gap-2 mb-3 text-xs">
+          <div>
+            <p className="text-gray-600 font-semibold mb-1">Program</p>
+            <p className="text-gray-800 font-medium line-clamp-2">
+              {data?.program}
+            </p>
+          </div>
+          <div>
+            <p className="text-gray-600 font-semibold mb-1">Intake</p>
+            <p className="text-gray-800 font-medium">{data?.intake}</p>
+          </div>
+        </div>
+
+        {/* Status Badge */}
+        <div className="pt-3 border-t border-gray-200">
+          <div className="flex items-center justify-between">
+            {data?.phase ? (
+              <span
+                className={`font-bold px-2 py-1 rounded-full text-sm whitespace-nowrap inline-flex items-center justify-center ${
+                  data?.phase === "pending"
+                    ? "bg-yellow-100 text-yellow-700"
+                    : data?.phase === "ongoing"
+                    ? "bg-blue-100 text-blue-700"
+                    : data?.phase === "completed"
+                    ? "bg-green-100 text-green-700"
+                    : data?.phase === "cancelled"
+                    ? "bg-red-100 text-red-700"
+                    : data?.phase === "deferred"
+                    ? "bg-orange-100 text-orange-700"
+                    : data?.phase === "not-enrolled"
+                    ? "bg-gray-200 text-gray-700"
+                    : data?.phase === "offer letter waiting"
+                    ? "bg-yellow-100 text-yellow-700 ring-1 ring-yellow-200"
+                    : data?.phase === "offer letter received"
+                    ? "bg-green-100 text-green-700"
+                    : "bg-gray-100 text-gray-700"
+                }`}
+              >
+                {data?.phase?.startsWith("offer letter") ? (
+                  <div className="flex flex-col items-center leading-tight">
+                    <span className="text-[10px] leading-none">
+                      Offer Letter
+                    </span>
+                    <span className="text-xs font-semibold leading-none">
+                      {data?.phase?.includes("received")
+                        ? "Received"
+                        : "Waiting"}
+                    </span>
+                  </div>
+                ) : (
+                  formatPhaseLabel(data?.phase)
+                )}
+              </span>
+            ) : null}
+
+            {data?.steps && data?.steps.length > 0 && (
+              <div className="ml-auto flex flex-col items-end min-w-[140px] max-w-[180px]">
+                <p className="text-xs text-gray-500 font-semibold">
+                  Current Step
+                </p>
+                <p className="text-sm font-medium text-gray-800 text-right truncate">
+                  {currentStepName || "NIL"}
+                </p>
+                <p className="text-xs text-gray-400">
+                  Step {currentIndex + 1} of {stepsLen}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      {deleteModal && (
         <div className="fixed top-0 left-0 w-full h-screen bg-black/50 flex items-center justify-center z-50">
           <div className="relative bg-white mt-60  md:mt-0 rounded-lg p-5 md:p-10 m-5 flex flex-col gap-7">
             <h1 className="font-bold text-center capitalize text-xl text-primary_colors">
@@ -118,9 +218,8 @@ const ApplicationCard = ({ data, getData }) => {
           </div>
           {loader && <ReqLoader />}
         </div>
-  }
+      )}
     </>
-
   );
 };
 
