@@ -16,7 +16,6 @@ const Applications = ({ data }) => {
       {data?.map((work, i) => (
         <div
           key={i}
-          
           className="bg-white p-5 flex flex-wrap w-full md:w-[450px] justify-around rounded-xl shadow-xl relative text-black hover:scale-105 ease-in-out duration-300 mb-4"
         >
           <img
@@ -27,7 +26,6 @@ const Applications = ({ data }) => {
 
           {/* Application Details */}
           <div className="p-5 flex flex-col w-full capitalize border rounded border-primary_colors/30">
-           
             <h1 className="font-semibold text-sm">
               Student Name :{" "}
               <span className="font-thin ps-2">{work?.studentName}</span>
@@ -44,38 +42,37 @@ const Applications = ({ data }) => {
             </h1>
             <h1 className="font-semibold text-sm">
               Step :{" "}
-              <span className="font-thin ps-2">{work?.step?.name ?? 'NA'}</span>
+              <span className="font-thin ps-2">{work?.step?.name ?? "NA"}</span>
             </h1>
           </div>
 
           {/* Button part */}
           <div className="py-3 w-full flex flex-col md:flex-row gap-3">
             {user?.role === "admin" ? (
-              <Link to={`/applications/${work?.applicationId}/${work?.stepperId}`}>
+              <Link
+                to={`/applications/${work?.applicationId}/${work?.stepperId}`}
+              >
                 <button className="p-2 px-10 h-10 text-white rounded bg-primary_colors w-full hover:scale-105 ease-in-out duration-200">
                   View
                 </button>
               </Link>
             ) : (
-              <Link to={`/employee/application/${work?.applicationId}/${work?.stepperId}`}>
+              <Link
+                to={`/employee/application/${work?.applicationId}/${work?.stepperId}?stepNumber=${work?.stepNumber}`}
+              >
                 <button className="p-2 px-10 h-10 text-sm text-white rounded bg-primary_colors w-full hover:scale-105 ease-in-out duration-200">
                   View
                 </button>
               </Link>
             )}
             <div
-              className={`p-2 px-10 h-10 text-sm rounded ${work?.stepStatus === "completed"
-                  ? 
-                  " text-green-800 border border-green-800"
-                  :
-                  work?.stepStatus === "ongoing"
-                  ? 
-                  "text-[#E87D00] border border-[#E87D00]"
-                  :
-                  work?.stepStatus === "pending"
-                  &&
-                  "text-[#e22727] border border-[#e22727]"
-
+              className={`p-2 px-10 h-10 text-sm rounded ${
+                work?.stepStatus === "completed"
+                  ? " text-green-800 border border-green-800"
+                  : work?.stepStatus === "ongoing"
+                    ? "text-[#E87D00] border border-[#E87D00]"
+                    : work?.stepStatus === "pending" &&
+                      "text-[#e22727] border border-[#e22727]"
               } capitalize w-full text-center`}
             >
               {work?.stepStatus}

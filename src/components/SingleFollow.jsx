@@ -91,7 +91,7 @@ const SingleFollow = ({
         if (Array.isArray(noteObj) && noteObj.length > 0) {
           console.log(
             `Note ${index} is array, extracting first item:`,
-            noteObj[0]
+            noteObj[0],
           );
           noteObj = noteObj[0];
         }
@@ -190,14 +190,14 @@ const SingleFollow = ({
 
     const prev = previousAttachments;
     setPreviousAttachments((a) =>
-      a.filter((att) => (att._id || att.id) !== attachmentId)
+      a.filter((att) => (att._id || att.id) !== attachmentId),
     );
 
     try {
       const url = buildDeleteUrl(
         deleteFollowupAttachment,
         ":attachmentId",
-        attachmentId
+        attachmentId,
       );
       const res = await axiosPrivate.delete(url);
       if (res.status === 200) {
@@ -249,7 +249,7 @@ const SingleFollow = ({
     // remove commId if present
     if (followData?.communication?.includes(commId)) {
       const newArr = followData?.communication?.filter(
-        (item) => item !== commId
+        (item) => item !== commId,
       );
       setFollowData((prev) => ({ ...prev, communication: newArr }));
     } else {
@@ -324,6 +324,27 @@ const SingleFollow = ({
     toast.info("Attachment removed");
   };
 
+  const openAttachment = async (event, fileUrl) => {
+    event.preventDefault();
+    const newTab = window.open("about:blank", "_blank");
+    if (!newTab) {
+      toast.error("Please allow pop-ups to open attachments");
+      return;
+    }
+
+    try {
+      const response = await axiosPrivate.get(fileUrl, {
+        responseType: "blob",
+      });
+      const objectUrl = URL.createObjectURL(response.data);
+      newTab.location.href = objectUrl;
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
+    } catch (error) {
+      newTab.close();
+      toast.error("Unable to open attachment");
+    }
+  };
+
   const addCommentFunc = () => {
     const trimmedComment = comment?.trim();
     if (!trimmedComment || trimmedComment.length === 0) {
@@ -353,7 +374,7 @@ const SingleFollow = ({
         return;
       }
       const response = await axiosPrivate.get(
-        `${followupRoute}/${studentData?.followup}`
+        `${followupRoute}/${studentData?.followup}`,
       );
 
       if (response.status === 200) {
@@ -408,7 +429,7 @@ const SingleFollow = ({
       formDataToSend.append("author", followData.author);
       formDataToSend.append(
         "communication",
-        JSON.stringify(followData.communication)
+        JSON.stringify(followData.communication),
       );
       formDataToSend.append("contents", JSON.stringify(followData.contents));
       // only send newly added comments (not existing fetched comments)
@@ -441,7 +462,7 @@ const SingleFollow = ({
             // Notification post Data
             const notificationReponse = await axiosPrivate.post(
               notification,
-              data
+              data,
             );
             console.log({ notificationReponse });
           } catch (error) {
@@ -728,20 +749,24 @@ const SingleFollow = ({
                         fileUrl = `${baseUrl}/${fileUrl.replace(/^\//, "")}`;
                       }
 
+                      if (attachment._id && studentData?.followup) {
+                        fileUrl = `${baseUrl}/api/student/followup/${studentData.followup}/attachment/${attachment._id}/file`;
+                      }
+
                       return (
                         <div
                           key={`prev-${index}`}
                           role={fileUrl ? "button" : undefined}
                           tabIndex={fileUrl ? 0 : undefined}
-                          onClick={() =>
-                            fileUrl && window.open(fileUrl, "_blank")
+                          onClick={(event) =>
+                            fileUrl && openAttachment(event, fileUrl)
                           }
                           onKeyDown={(e) => {
                             if (
                               fileUrl &&
                               (e.key === "Enter" || e.key === " ")
                             ) {
-                              window.open(fileUrl, "_blank");
+                              openAttachment(e, fileUrl);
                             }
                           }}
                           className="flex items-center gap-2 bg-green-50 px-3 py-2 rounded-lg border border-green-300 cursor-pointer"
@@ -753,7 +778,10 @@ const SingleFollow = ({
                                 target="_blank"
                                 rel="noreferrer"
                                 className="text-xs font-medium text-gray-700 truncate hover:underline block"
-                                onClick={(e) => e.stopPropagation()}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openAttachment(e, fileUrl);
+                                }}
                               >
                                 {fileName || fileUrl}
                               </a>
@@ -769,7 +797,7 @@ const SingleFollow = ({
                               onClick={(e) => {
                                 e.stopPropagation();
                                 deleteAttachment(
-                                  attachment._id || attachment.id
+                                  attachment._id || attachment.id,
                                 );
                               }}
                               className="text-red-500 hover:text-red-700"

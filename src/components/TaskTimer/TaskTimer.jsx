@@ -1,50 +1,56 @@
 import React, { useEffect, useState } from "react";
 import { FaPlay, FaPause, FaStop } from "react-icons/fa";
 import { toast } from "react-toastify";
+import useAxiosPrivate from "../../hooks/useAxiosPrivate";
+import { workTimerRoute } from "../../utils/Endpoint";
 
-const TaskTimer = ({ taskId, onTimeUpdate }) => {
-  const [isRunning, setIsRunning] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
-  const [elapsedTime, setElapsedTime] = useState(0); // in seconds
+const TaskTimer = ({
+  stepperId,
+  stepNumber,
+  taskId,
+  onTimeUpdate,
+  autoStart = false,
+  command,
+}) => {
+  const axios = useAxiosPrivate();
   const [timerData, setTimerData] = useState({
-    startTime: null,
-    pauseTime: null,
-    totalTime: 0,
-    pausedDuration: 0,
+    timerState: "stopped",
+    elapsedSeconds: 0,
   });
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const timerUrl = `${workTimerRoute}/${stepperId}/${stepNumber}`;
 
-  // Load timer data from localStorage
-  useEffect(() => {
-    const savedData = localStorage.getItem(`timer_${taskId}`);
-    if (savedData) {
-      const data = JSON.parse(savedData);
-      setTimerData(data);
-      setElapsedTime(data.totalTime);
+  const loadTimer = async () => {
+    try {
+      const response = await axios.get(timerUrl);
+      setTimerData(response.data);
+      setElapsedTime(response.data.elapsedSeconds || 0);
+      onTimeUpdate?.(response.data);
+    } catch (error) {
+      console.log(error);
     }
-  }, [taskId]);
+  };
 
-  // Timer effect
   useEffect(() => {
-    let interval;
-    if (isRunning && !isPaused) {
-      interval = setInterval(() => {
-        setElapsedTime((prev) => prev + 1);
-      }, 1000);
-    }
+    loadTimer();
+    const interval = setInterval(loadTimer, 5000);
     return () => clearInterval(interval);
-  }, [isRunning, isPaused]);
+  }, [timerUrl]);
 
-  // Save timer data to localStorage
   useEffect(() => {
-    const data = {
-      ...timerData,
-      totalTime: elapsedTime,
-    };
-    localStorage.setItem(`timer_${taskId}`, JSON.stringify(data));
-    if (onTimeUpdate) {
-      onTimeUpdate(data);
-    }
-  }, [elapsedTime, taskId, timerData]);
+    if (timerData.timerState !== "running") return undefined;
+
+    const interval = setInterval(() => {
+      setElapsedTime((currentTime) => currentTime + 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [timerData.timerState]);
+
+  useEffect(() => {
+    if (command) updateTimer(command?.action || command);
+  }, [command]);
 
   const formatTime = (seconds) => {
     const hours = Math.floor(seconds / 3600);
@@ -52,59 +58,30 @@ const TaskTimer = ({ taskId, onTimeUpdate }) => {
     const secs = seconds % 60;
     return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
       2,
-      "0"
+      "0",
     )}:${String(secs).padStart(2, "0")}`;
   };
 
-  const handleStart = () => {
-    if (!isRunning) {
-      setTimerData((prev) => ({
-        ...prev,
-        startTime: prev.startTime || new Date().toISOString(),
-      }));
-      setIsRunning(true);
-      setIsPaused(false);
-      toast.success("Timer started");
+  const updateTimer = async (action) => {
+    if (loading) return;
+    setLoading(true);
+    try {
+      const response = await axios.post(`${timerUrl}/${action}`);
+      setTimerData(response.data);
+      setElapsedTime(response.data.elapsedSeconds || 0);
+      onTimeUpdate?.(response.data);
+      if (action === "start") toast.success("Timer started");
+      if (action === "pause") toast.info("Timer paused");
+      if (action === "stop") toast.info("Timer stopped");
+    } catch (error) {
+      toast.error(error?.response?.data?.msg || "Unable to update timer");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handlePause = () => {
-    if (isRunning && !isPaused) {
-      setIsPaused(true);
-      setTimerData((prev) => ({
-        ...prev,
-        pauseTime: new Date().toISOString(),
-      }));
-      toast.info("Timer paused");
-    } else if (isPaused) {
-      setIsPaused(false);
-      toast.success("Timer resumed");
-    }
-  };
-
-  const handleStop = () => {
-    setIsRunning(false);
-    setIsPaused(false);
-    setTimerData((prev) => ({
-      ...prev,
-      pauseTime: null,
-    }));
-    toast.success(`Task completed. Total time: ${formatTime(elapsedTime)}`);
-  };
-
-  const handleReset = () => {
-    setIsRunning(false);
-    setIsPaused(false);
-    setElapsedTime(0);
-    setTimerData({
-      startTime: null,
-      pauseTime: null,
-      totalTime: 0,
-      pausedDuration: 0,
-    });
-    localStorage.removeItem(`timer_${taskId}`);
-    toast.info("Timer reset");
-  };
+  const isRunning = timerData.timerState === "running";
+  const isPaused = timerData.timerState === "paused";
 
   return (
     <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-5 rounded-lg border-2 border-primary_colors mb-4">
@@ -118,8 +95,8 @@ const TaskTimer = ({ taskId, onTimeUpdate }) => {
           {formatTime(elapsedTime)}
         </div>
         <p className="text-xs text-gray-500 mt-2">
-          {timerData.startTime
-            ? `Started: ${new Date(timerData.startTime).toLocaleString('en-IN')}`
+          {timerData.startedAt
+            ? `Started: ${new Date(timerData.startedAt).toLocaleString("en-IN")}`
             : "Not started"}
         </p>
       </div>
@@ -127,7 +104,7 @@ const TaskTimer = ({ taskId, onTimeUpdate }) => {
       {/* Timer Controls */}
       <div className="flex gap-3 justify-center flex-wrap">
         <button
-          onClick={handleStart}
+          onClick={() => updateTimer("start")}
           disabled={isRunning}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
             isRunning
@@ -140,7 +117,7 @@ const TaskTimer = ({ taskId, onTimeUpdate }) => {
         </button>
 
         <button
-          onClick={handlePause}
+          onClick={() => updateTimer(isPaused ? "start" : "pause")}
           disabled={!isRunning && !isPaused}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
             isRunning || isPaused
@@ -155,7 +132,7 @@ const TaskTimer = ({ taskId, onTimeUpdate }) => {
         </button>
 
         <button
-          onClick={handleStop}
+          onClick={() => updateTimer("stop")}
           disabled={!isRunning && elapsedTime === 0}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
             isRunning || elapsedTime > 0
@@ -165,13 +142,6 @@ const TaskTimer = ({ taskId, onTimeUpdate }) => {
         >
           <FaStop size={16} />
           Stop
-        </button>
-
-        <button
-          onClick={handleReset}
-          className="px-4 py-2 rounded-lg font-medium bg-gray-400 text-white hover:bg-gray-500 hover:scale-105 transition-all"
-        >
-          Reset
         </button>
       </div>
 

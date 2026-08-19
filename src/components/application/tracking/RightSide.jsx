@@ -5,10 +5,11 @@ import {
   notification,
   notifyRoute,
   postComment,
+  workTimerRoute,
 } from "../../../utils/Endpoint";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 import EmptyData from "../../loading/EmptyData";
 import DocModal from "../../student/DocModal";
@@ -35,12 +36,28 @@ const RightSide = ({ data, cb, application }) => {
   const [stepNumber, setStepNumber] = useState(null);
   const [employeeData, setEmployeeData] = useState([]);
   const [activeTaskId, setActiveTaskId] = useState(null);
+  const [timerCommand, setTimerCommand] = useState(null);
   const [timerData, setTimerData] = useState({});
 
   const path = useLocation();
 
   const isFinished =
     application.phase === "completed" || application.phase === "cancelled";
+  const currentUserId = user?._id || user?.id || user?.userId;
+  const canAssignApplicationStep =
+    user?.role === "admin" ||
+    (user?.role === "employee" &&
+      (application?.assignees || []).some(
+        (assignee) => String(assignee) === String(currentUserId),
+      ));
+
+  useEffect(() => {
+    const displayedStepId = data?.steps?.[0]?._id;
+    if (activeTaskId && String(activeTaskId) !== String(displayedStepId)) {
+      setActiveTaskId(null);
+      setTimerCommand(null);
+    }
+  }, [data?._id, data?.steps?.[0]?._id, activeTaskId]);
 
   // console.log(data);
   let empTasks = [];
@@ -54,10 +71,9 @@ const RightSide = ({ data, cb, application }) => {
 
   let myTasks = [];
   if (user.role === "employee") {
-    myTasks = data?.steps?.filter((step) => {
-      // Show all tasks that are not completed
-      return step?.status !== "completed";
-    });
+    // Application passes only the currently selected step for employees.
+    // Keep it visible even before it is assigned so Next can be followed.
+    myTasks = data?.steps || [];
     myTasks?.reverse();
   }
 
@@ -109,7 +125,7 @@ const RightSide = ({ data, cb, application }) => {
         try {
           await axiosPrivate.post(
             `${notifyRoute}/multi-send`,
-            notificationData
+            notificationData,
           );
         } catch (error) {
           console.log(error);
@@ -138,6 +154,39 @@ const RightSide = ({ data, cb, application }) => {
       });
   }, []);
 
+  useEffect(() => {
+    if (user?.role !== "employee" || !data?._id) return;
+
+    const displayedStep = data?.steps?.[0];
+
+    if (!displayedStep?._id) return;
+    const displayedAssigneeId =
+      displayedStep.assignee?._id || displayedStep.assignee;
+    if (String(displayedAssigneeId) !== String(currentUserId)) {
+      setActiveTaskId(null);
+      return;
+    }
+
+    // Mount the timer immediately; TaskTimer loads the persisted server state.
+    setActiveTaskId(displayedStep._id);
+
+    axios
+      .get(`${workTimerRoute}/${data._id}/${displayedStep._id}`)
+      .then((response) => {
+        const timer = response.data;
+        if (
+          timer?.timerState === "running" ||
+          timer?.timerState === "paused" ||
+          Number(timer?.elapsedSeconds) > 0
+        ) {
+          setActiveTaskId(displayedStep._id);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, [data?._id, data?.steps?.[0]?._id, user?.role, currentUserId]);
+
   return (
     <>
       <div className="w-full overflow-y-auto pb-10 space-y-6">
@@ -154,6 +203,9 @@ const RightSide = ({ data, cb, application }) => {
           <div className="animate-fade-in">
             <TaskTimer
               taskId={activeTaskId}
+              stepperId={data?._id}
+              stepNumber={activeTaskId}
+              command={timerCommand}
               onTimeUpdate={(data) => setTimerData(data)}
             />
           </div>
@@ -161,276 +213,308 @@ const RightSide = ({ data, cb, application }) => {
 
         {/* Tasks Container */}
         <div className="space-y-4">
-          {empTasks && empTasks.length > 0 ? (
-            empTasks?.map((empTask) => (
-              <div
-                key={empTask._id}
-                className="bg-white p-6 rounded-xl border-l-4 border-primary_colors shadow-md hover:shadow-lg transition-all transform hover:scale-102"
-              >
-                {/* Top Section: Date & Clear Status Display */}
-                <div className="flex justify-between items-start mb-5 gap-4">
-                  <span className="inline-block px-4 py-2 bg-blue-50 text-primary_colors text-xs font-bold rounded-lg border border-blue-200">
-                    📅 {createdDate}
-                  </span>
+          {user?.role === "admin" &&
+            (empTasks && empTasks.length > 0 ? (
+              empTasks?.map((empTask) => (
+                <div
+                  key={empTask._id}
+                  className="bg-white p-6 rounded-xl border-l-4 border-primary_colors shadow-md hover:shadow-lg transition-all transform hover:scale-102"
+                >
+                  {/* Top Section: Date & Clear Status Display */}
+                  <div className="flex justify-between items-start mb-5 gap-4">
+                    <span className="inline-block px-4 py-2 bg-blue-50 text-primary_colors text-xs font-bold rounded-lg border border-blue-200">
+                      📅 {createdDate}
+                    </span>
 
-                  {/* STATUS SECTION - VERY CLEAR */}
-                  <div className="flex-1 bg-gradient-to-r from-orange-50 to-red-50 p-3 rounded-lg border-2 border-orange-300">
-                    <div className="text-center">
-                      <p className="text-xs text-gray-700 font-bold tracking-widest mb-2">
-                        TASK STATUS
-                      </p>
-                      <div className="flex items-center justify-center gap-2">
-                        {empTask?.status === "pending" && (
-                          <>
-                            <span className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></span>
-                            <span className="text-base font-black text-yellow-700 uppercase">
-                              ⏳ Pending
-                            </span>
-                          </>
-                        )}
-                        {empTask?.status === "in-progress" && (
-                          <>
-                            <span className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></span>
-                            <span className="text-base font-black text-blue-700 uppercase">
-                              🔄 In Progress
-                            </span>
-                          </>
-                        )}
-                        {empTask?.status === "completed" && (
-                          <>
-                            <span className="w-3 h-3 bg-green-500 rounded-full"></span>
-                            <span className="text-base font-black text-green-700 uppercase">
-                              ✅ Completed
-                            </span>
-                          </>
-                        )}
-                        {!["pending", "in-progress", "completed"].includes(
-                          empTask?.status
-                        ) && (
-                          <>
-                            <span className="w-3 h-3 bg-gray-500 rounded-full"></span>
-                            <span className="text-base font-black text-gray-700 capitalize">
-                              {empTask?.status}
-                            </span>
-                          </>
-                        )}
+                    {/* STATUS SECTION - VERY CLEAR */}
+                    <div className="flex-1 bg-gradient-to-r from-orange-50 to-red-50 p-3 rounded-lg border-2 border-orange-300">
+                      <div className="text-center">
+                        <p className="text-xs text-gray-700 font-bold tracking-widest mb-2">
+                          TASK STATUS
+                        </p>
+                        <div className="flex items-center justify-center gap-2">
+                          {empTask?.status === "pending" && (
+                            <>
+                              <span className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></span>
+                              <span className="text-base font-black text-yellow-700 uppercase">
+                                ⏳ Pending
+                              </span>
+                            </>
+                          )}
+                          {empTask?.status === "in-progress" && (
+                            <>
+                              <span className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></span>
+                              <span className="text-base font-black text-blue-700 uppercase">
+                                🔄 In Progress
+                              </span>
+                            </>
+                          )}
+                          {empTask?.status === "completed" && (
+                            <>
+                              <span className="w-3 h-3 bg-green-500 rounded-full"></span>
+                              <span className="text-base font-black text-green-700 uppercase">
+                                ✅ Completed
+                              </span>
+                            </>
+                          )}
+                          {!["pending", "in-progress", "completed"].includes(
+                            empTask?.status,
+                          ) && (
+                            <>
+                              <span className="w-3 h-3 bg-gray-500 rounded-full"></span>
+                              <span className="text-base font-black text-gray-700 capitalize">
+                                {empTask?.status}
+                              </span>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Details Section - Two Column Layout */}
-                <div className="grid grid-cols-2 gap-3 mb-4">
-                  {/* ASSIGNEE */}
-                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border-2 border-blue-300">
-                    <p className="text-xs text-blue-700 font-bold tracking-wider mb-2">
-                      👤 ASSIGNEE
-                    </p>
-                    <p className="text-sm font-bold text-blue-900 capitalize line-clamp-2">
-                      {empTask?.assigneeName || "🔄 Unassigned"}
-                    </p>
+                  {/* Details Section - Two Column Layout */}
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    {/* ASSIGNEE */}
+                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border-2 border-blue-300">
+                      <p className="text-xs text-blue-700 font-bold tracking-wider mb-2">
+                        👤 ASSIGNEE
+                      </p>
+                      <p className="text-sm font-bold text-blue-900 capitalize line-clamp-2">
+                        {empTask?.assigneeName || "🔄 Unassigned"}
+                      </p>
+                    </div>
+
+                    {/* STEP NAME */}
+                    <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border-2 border-purple-300">
+                      <p className="text-xs text-purple-700 font-bold tracking-wider mb-2">
+                        📌 STEP
+                      </p>
+                      <p className="text-sm font-bold text-purple-900 capitalize line-clamp-2">
+                        {empTask?.name}
+                      </p>
+                    </div>
                   </div>
 
-                  {/* STEP NAME */}
-                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border-2 border-purple-300">
-                    <p className="text-xs text-purple-700 font-bold tracking-wider mb-2">
-                      📌 STEP
-                    </p>
-                    <p className="text-sm font-bold text-purple-900 capitalize line-clamp-2">
-                      {empTask?.name}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Action Button */}
-                <div className="mb-3 flex flex-col gap-2">
-                  {!isFinished &&
-                    !(empTask?.assignee || empTask?.assigneeName) && (
-                      <button
-                        onClick={() => {
-                          setStepNumber(empTask._id);
-                          setAssigneeUpdate(true);
-                        }}
-                        className="w-full px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white text-xs font-bold rounded-lg hover:shadow-lg transition-all hover:scale-105"
-                      >
-                        ➕ ASSIGN CURRENT STEP
-                      </button>
-                    )}
-
-                  {/* Allow admin to update status as well */}
-                  {!isFinished && empTask?.status !== "completed" && (
-                    <button
-                      onClick={() => (
-                        setStepNumber(empTask._id), setStatusUpdate(true)
+                  {/* Action Button */}
+                  <div className="mb-3 flex flex-col gap-2">
+                    {!isFinished &&
+                      !(empTask?.assignee || empTask?.assigneeName) && (
+                        <button
+                          onClick={() => {
+                            setStepNumber(empTask._id);
+                            setAssigneeUpdate(true);
+                          }}
+                          className="w-full px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white text-xs font-bold rounded-lg hover:shadow-lg transition-all hover:scale-105"
+                        >
+                          ➕ ASSIGN CURRENT STEP
+                        </button>
                       )}
-                      className="w-full px-4 py-2 bg-gradient-to-r from-primary_colors to-blue-600 text-white text-xs font-bold rounded-lg hover:shadow-lg transition-all hover:scale-105"
-                    >
-                      ✏️ UPDATE STATUS
-                    </button>
-                  )}
-                </div>
 
-                {/* Timer Controls */}
-                <div className="bg-gradient-to-r from-green-50 to-green-100 p-3 rounded-lg border-2 border-green-300 flex gap-2 items-center">
-                  <span className="text-green-800 font-bold text-sm flex-shrink-0">
-                    ⏱️ Timer:
-                  </span>
-                  <button
-                    onClick={() => setActiveTaskId(empTask._id)}
-                    className="flex-1 px-3 py-2 bg-green-500 text-white rounded font-bold text-xs hover:bg-green-600 transition-all hover:scale-105"
-                  >
-                    ▶ START
-                  </button>
-                  <button
-                    onClick={() => setActiveTaskId(null)}
-                    className="flex-1 px-3 py-2 bg-red-500 text-white rounded font-bold text-xs hover:bg-red-600 transition-all hover:scale-105"
-                  >
-                    ⏹ STOP
-                  </button>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="w-full py-12 flex items-center justify-center">
-              <div className="text-center">
-                <p className="text-lg text-gray-500 font-semibold">
-                  📭 No current or upcoming tasks
-                </p>
-                <p className="text-sm text-gray-400 mt-1">
-                  All tasks are completed
-                </p>
-              </div>
-            </div>
-          )}
-          {myTasks && myTasks.length > 0 ? (
-            myTasks?.map((myTasks) => (
-              <div
-                key={myTasks._id}
-                className="bg-white p-6 rounded-xl border-l-4 border-primary_colors shadow-md hover:shadow-lg transition-all transform hover:scale-102"
-              >
-                {/* Top Section: Date & Clear Status Display */}
-                <div className="flex justify-between items-start mb-5 gap-4">
-                  <span className="inline-block px-4 py-2 bg-blue-50 text-primary_colors text-xs font-bold rounded-lg border border-blue-200">
-                    📅 {createdDate}
-                  </span>
-
-                  {/* STATUS SECTION - VERY CLEAR */}
-                  <div className="flex-1 bg-gradient-to-r from-orange-50 to-red-50 p-3 rounded-lg border-2 border-orange-300">
-                    <div className="text-center">
-                      <p className="text-xs text-gray-700 font-bold tracking-widest mb-2">
-                        TASK STATUS
-                      </p>
-                      <div className="flex items-center justify-center gap-2">
-                        {myTasks?.status === "pending" && (
-                          <>
-                            <span className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></span>
-                            <span className="text-base font-black text-yellow-700 uppercase">
-                              ⏳ Pending
-                            </span>
-                          </>
-                        )}
-                        {myTasks?.status === "in-progress" && (
-                          <>
-                            <span className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></span>
-                            <span className="text-base font-black text-blue-700 uppercase">
-                              🔄 In Progress
-                            </span>
-                          </>
-                        )}
-                        {myTasks?.status === "completed" && (
-                          <>
-                            <span className="w-3 h-3 bg-green-500 rounded-full"></span>
-                            <span className="text-base font-black text-green-700 uppercase">
-                              ✅ Completed
-                            </span>
-                          </>
-                        )}
-                        {!["pending", "in-progress", "completed"].includes(
-                          myTasks?.status
-                        ) && (
-                          <>
-                            <span className="w-3 h-3 bg-gray-500 rounded-full"></span>
-                            <span className="text-base font-black text-gray-700 capitalize">
-                              {myTasks?.status}
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Details Section - Two Column Layout */}
-                <div className="grid grid-cols-2 gap-3 mb-4">
-                  {/* ASSIGNEE */}
-                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border-2 border-blue-300">
-                    <p className="text-xs text-blue-700 font-bold tracking-wider mb-2">
-                      👤 ASSIGNEE
-                    </p>
-                    <p className="text-sm font-bold text-blue-900 capitalize line-clamp-2">
-                      {myTasks?.assigneeName || "🔄 Unassigned"}
-                    </p>
-                  </div>
-
-                  {/* STEP NAME */}
-                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border-2 border-purple-300">
-                    <p className="text-xs text-purple-700 font-bold tracking-wider mb-2">
-                      📌 STEP
-                    </p>
-                    <p className="text-sm font-bold text-purple-900 capitalize line-clamp-2">
-                      {myTasks?.name}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="space-y-2 mb-3">
-                  {myTasks?.assignee === user?._id && !isFinished && (
-                    <>
+                    {/* Allow admin to update status as well */}
+                    {!isFinished && empTask?.status !== "completed" && (
                       <button
                         onClick={() => (
-                          setStepNumber(myTasks._id), setStatusUpdate(true)
+                          setStepNumber(empTask._id),
+                          setStatusUpdate(true)
                         )}
                         className="w-full px-4 py-2 bg-gradient-to-r from-primary_colors to-blue-600 text-white text-xs font-bold rounded-lg hover:shadow-lg transition-all hover:scale-105"
                       >
                         ✏️ UPDATE STATUS
                       </button>
-                    </>
+                    )}
+                  </div>
+
+                  {/* Timer Controls */}
+                  <div className="bg-gradient-to-r from-green-50 to-green-100 p-3 rounded-lg border-2 border-green-300 flex gap-2 items-center">
+                    <span className="text-green-800 font-bold text-sm flex-shrink-0">
+                      ⏱️ Timer:
+                    </span>
+                    <button
+                      onClick={() => setActiveTaskId(empTask._id)}
+                      className="flex-1 px-3 py-2 bg-green-500 text-white rounded font-bold text-xs hover:bg-green-600 transition-all hover:scale-105"
+                    >
+                      ▶ START
+                    </button>
+                    <button
+                      onClick={() => setActiveTaskId(null)}
+                      className="flex-1 px-3 py-2 bg-red-500 text-white rounded font-bold text-xs hover:bg-red-600 transition-all hover:scale-105"
+                    >
+                      ⏹ STOP
+                    </button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="w-full py-12 flex items-center justify-center">
+                <div className="text-center">
+                  <p className="text-lg text-gray-500 font-semibold">
+                    📭 No current or upcoming tasks
+                  </p>
+                  <p className="text-sm text-gray-400 mt-1">
+                    All tasks are completed
+                  </p>
+                </div>
+              </div>
+            ))}
+          {user?.role === "employee" &&
+            (myTasks && myTasks.length > 0 ? (
+              myTasks?.map((myTasks) => (
+                <div
+                  key={myTasks._id}
+                  className="bg-white p-6 rounded-xl border-l-4 border-primary_colors shadow-md hover:shadow-lg transition-all transform hover:scale-102"
+                >
+                  {/* Top Section: Date & Clear Status Display */}
+                  <div className="flex justify-between items-start mb-5 gap-4">
+                    <span className="inline-block px-4 py-2 bg-blue-50 text-primary_colors text-xs font-bold rounded-lg border border-blue-200">
+                      📅 {createdDate}
+                    </span>
+
+                    {/* STATUS SECTION - VERY CLEAR */}
+                    <div className="flex-1 bg-gradient-to-r from-orange-50 to-red-50 p-3 rounded-lg border-2 border-orange-300">
+                      <div className="text-center">
+                        <p className="text-xs text-gray-700 font-bold tracking-widest mb-2">
+                          TASK STATUS
+                        </p>
+                        <div className="flex items-center justify-center gap-2">
+                          {myTasks?.status === "pending" && (
+                            <>
+                              <span className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></span>
+                              <span className="text-base font-black text-yellow-700 uppercase">
+                                ⏳ Pending
+                              </span>
+                            </>
+                          )}
+                          {myTasks?.status === "in-progress" && (
+                            <>
+                              <span className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></span>
+                              <span className="text-base font-black text-blue-700 uppercase">
+                                🔄 In Progress
+                              </span>
+                            </>
+                          )}
+                          {myTasks?.status === "completed" && (
+                            <>
+                              <span className="w-3 h-3 bg-green-500 rounded-full"></span>
+                              <span className="text-base font-black text-green-700 uppercase">
+                                ✅ Completed
+                              </span>
+                            </>
+                          )}
+                          {!["pending", "in-progress", "completed"].includes(
+                            myTasks?.status,
+                          ) && (
+                            <>
+                              <span className="w-3 h-3 bg-gray-500 rounded-full"></span>
+                              <span className="text-base font-black text-gray-700 capitalize">
+                                {myTasks?.status}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Details Section - Two Column Layout */}
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    {/* ASSIGNEE */}
+                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border-2 border-blue-300">
+                      <p className="text-xs text-blue-700 font-bold tracking-wider mb-2">
+                        👤 ASSIGNEE
+                      </p>
+                      <p className="text-sm font-bold text-blue-900 capitalize line-clamp-2">
+                        {myTasks?.assigneeName || "🔄 Unassigned"}
+                      </p>
+                    </div>
+
+                    {/* STEP NAME */}
+                    <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border-2 border-purple-300">
+                      <p className="text-xs text-purple-700 font-bold tracking-wider mb-2">
+                        📌 STEP
+                      </p>
+                      <p className="text-sm font-bold text-purple-900 capitalize line-clamp-2">
+                        {myTasks?.name}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="space-y-2 mb-3">
+                    {canAssignApplicationStep &&
+                      !isFinished &&
+                      !(myTasks?.assignee || myTasks?.assigneeName) && (
+                        <button
+                          onClick={() => {
+                            setStepNumber(myTasks._id);
+                            setAssigneeUpdate(true);
+                          }}
+                          className="w-full px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white text-xs font-bold rounded-lg hover:shadow-lg transition-all hover:scale-105"
+                        >
+                          ➕ ASSIGN CURRENT STEP
+                        </button>
+                      )}
+
+                    {String(myTasks?.assignee) === String(currentUserId) &&
+                      !isFinished && (
+                        <>
+                          <button
+                            onClick={() => (
+                              setStepNumber(myTasks._id),
+                              setStatusUpdate(true)
+                            )}
+                            className="w-full px-4 py-2 bg-gradient-to-r from-primary_colors to-blue-600 text-white text-xs font-bold rounded-lg hover:shadow-lg transition-all hover:scale-105"
+                          >
+                            ✏️ UPDATE STATUS
+                          </button>
+                        </>
+                      )}
+                  </div>
+
+                  {/* Timer Controls */}
+                  {String(myTasks?.assignee) === String(currentUserId) && (
+                    <div className="bg-gradient-to-r from-green-50 to-green-100 p-3 rounded-lg border-2 border-green-300 flex gap-2 items-center">
+                      <span className="text-green-800 font-bold text-sm flex-shrink-0">
+                        ⏱️ Timer:
+                      </span>
+                      <button
+                        onClick={() => {
+                          setActiveTaskId(myTasks._id);
+                          setTimerCommand({
+                            action: "start",
+                            nonce: Date.now(),
+                          });
+                        }}
+                        className="flex-1 px-3 py-2 bg-green-500 text-white rounded font-bold text-xs hover:bg-green-600 transition-all hover:scale-105"
+                      >
+                        ▶ START
+                      </button>
+                      <button
+                        onClick={() =>
+                          setTimerCommand({
+                            action: "stop",
+                            nonce: Date.now(),
+                          })
+                        }
+                        className="flex-1 px-3 py-2 bg-red-500 text-white rounded font-bold text-xs hover:bg-red-600 transition-all hover:scale-105"
+                      >
+                        ⏹ STOP
+                      </button>
+                    </div>
                   )}
                 </div>
-
-                {/* Timer Controls */}
-                <div className="bg-gradient-to-r from-green-50 to-green-100 p-3 rounded-lg border-2 border-green-300 flex gap-2 items-center">
-                  <span className="text-green-800 font-bold text-sm flex-shrink-0">
-                    ⏱️ Timer:
-                  </span>
-                  <button
-                    onClick={() => setActiveTaskId(myTasks._id)}
-                    className="flex-1 px-3 py-2 bg-green-500 text-white rounded font-bold text-xs hover:bg-green-600 transition-all hover:scale-105"
-                  >
-                    ▶ START
-                  </button>
-                  <button
-                    onClick={() => setActiveTaskId(null)}
-                    className="flex-1 px-3 py-2 bg-red-500 text-white rounded font-bold text-xs hover:bg-red-600 transition-all hover:scale-105"
-                  >
-                    ⏹ STOP
-                  </button>
+              ))
+            ) : (
+              <div className="w-full py-12 flex items-center justify-center">
+                <div className="text-center">
+                  <p className="text-lg text-gray-500 font-semibold">
+                    📭 No current or upcoming tasks
+                  </p>
+                  <p className="text-sm text-gray-400 mt-1">
+                    All tasks are completed
+                  </p>
                 </div>
               </div>
-            ))
-          ) : (
-            <div className="w-full py-12 flex items-center justify-center">
-              <div className="text-center">
-                <p className="text-lg text-gray-500 font-semibold">
-                  📭 No current or upcoming tasks
-                </p>
-                <p className="text-sm text-gray-400 mt-1">
-                  All tasks are completed
-                </p>
-              </div>
-            </div>
-          )}
+            ))}
         </div>
 
         {/* Documents Section */}
@@ -444,13 +528,13 @@ const RightSide = ({ data, cb, application }) => {
               application?.documents?.map((items, i) => (
                 <Tippy key={i} className="" content={<div>{items?.name}</div>}>
                   <div className="flex flex-col items-center text-center text-[11px] cursor-pointer hover:scale-110 transition-transform">
-                    <Link to={items?.location}>
+                    <a href={items?.location} target="_blank" rel="noreferrer">
                       <img
                         src={require("../../../assets/icon/file.png")}
                         alt="file"
                         className="w-16 border-2 border-gray-300 p-2 rounded-lg hover:border-primary_colors transition-all"
                       />
-                    </Link>
+                    </a>
                     <span className="mt-2 font-semibold text-gray-700 truncate max-w-16">
                       {items?.name}
                     </span>

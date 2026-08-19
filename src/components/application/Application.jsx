@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { getAnApplicationRoute, getStepper } from "../../utils/Endpoint";
 import { useSelector } from "react-redux";
 import DateFormat from "../../utils/DateFormat";
@@ -17,6 +17,8 @@ const Application = () => {
 
   const [loader, setLoader] = useState(false);
   const { id, stepperId } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const assignedStepNumber = searchParams.get("stepNumber");
   const [data, setData] = useState({});
   const [application, setApplication] = useState({});
   const [stepper, setStepper] = useState([]);
@@ -55,7 +57,7 @@ const Application = () => {
     window.scroll(0, 0);
     getApplication();
     GetStepperData();
-  }, [id]);
+  }, [id, stepperId]);
 
   const fnToCallGetFn = () => {
     getApplication();
@@ -72,6 +74,13 @@ const Application = () => {
   // Selected filter by admin: all / counsellors / counsellors_operations / operations / operations_freelance / counsellors_freelance / freelance / case_closure
   const [selectedFilter, setSelectedFilter] = useState("all");
   const user = useSelector((state) => state?.auth?.userInfo);
+  const canAssignApplicationSteps =
+    user?.role === "admin" ||
+    (user?.role === "employee" &&
+      (application?.assignees || []).some(
+        (assignee) =>
+          String(assignee) === String(user?._id || user?.id || user?.userId),
+      ));
   // Map explicit step numeric IDs (from your list) to owner groups for precision
   const idOwnersMap = {
     2: ["counsellors"],
@@ -188,7 +197,7 @@ const Application = () => {
         step?.id ??
         step?.code ??
         step?.order ??
-        step?.index
+        step?.index,
     );
     if (!isNaN(num) && idOwnersMap[num]) {
       return idOwnersMap[num];
@@ -199,13 +208,13 @@ const Application = () => {
     const owners = [];
     if (
       /counsell|brainstorm|packages|proof|student decision|pre departure|after departure|aptitude|aptitude test|interview/.test(
-        name
+        name,
       )
     )
       owners.push("counsellors");
     if (
       /course finding|final profile|sop review|cv review|ects review|lom review|visa received/.test(
-        name
+        name,
       )
     ) {
       owners.push("counsellors");
@@ -213,13 +222,13 @@ const Application = () => {
     }
     if (
       /student enrolment|check eligibility|course shortlisting|pre application|pro listing|scholarship finding|equalance|basic documents|grade calculation|credit calculation|gpa|ects calculation|credit conversion|course segregation|attestation|documents chase|documentation process|documentation bundle|courier|uni assist|create login credentials|find applicant portal|application process learning|application submission|portal review|follow up|chasing conditions|accepting offer|tuition|application on hold|intake yet to be opened|incomplete|rejected|loan assistance|financial assistance|funds pending|funds submitted|finance under assessment|blocked account|finance approved|scholarship|visa|flight|forex|airport|departure|acceptance letter|visa filing|visa documentation|visa in process|visa rejected/.test(
-        name
+        name,
       )
     )
       owners.push("operations");
     if (
       /cv preparation|essay|sop preparation|letter of motivation|online visa submission|vfs|mock interview|accommodation|part time|essay edits|sop preparation|cv preparation|essay edits/.test(
-        name
+        name,
       )
     ) {
       owners.push("operations");
@@ -251,13 +260,13 @@ const Application = () => {
           step?._id ??
           step?.code ??
           step?.order ??
-          step?.index
+          step?.index,
       );
       if (!isNaN(num) && caseClosureIds.has(num)) return true;
       // fallback to name-based matching if no numeric id is present
       const name = (step?.name || "").toLowerCase();
       return /case closed|deferral|deferred|refund|student not enrolled|student deferred|deferral initiated|deferred \/ refund request pending/.test(
-        name
+        name,
       );
     }
 
@@ -280,6 +289,7 @@ const Application = () => {
 
   useEffect(() => {
     const list = filteredSteps;
+    if (assignedStepNumber) return;
     if (list.length) {
       const pendingIndex = list.findIndex((s) => s?.status === "pending");
       if (pendingIndex !== -1) {
@@ -293,11 +303,37 @@ const Application = () => {
     }
   }, [stepper, selectedFilter]);
 
+  useEffect(() => {
+    if (!assignedStepNumber) return;
+
+    const assignedIndex = filteredSteps.findIndex(
+      (step) => String(step?._id) === String(assignedStepNumber),
+    );
+
+    if (assignedIndex !== -1) {
+      setCurrentIndex(assignedIndex);
+      setSearchParams(
+        (currentParams) => {
+          const nextParams = new URLSearchParams(currentParams);
+          nextParams.delete("stepNumber");
+          return nextParams;
+        },
+        { replace: true },
+      );
+    }
+  }, [
+    assignedStepNumber,
+    filteredSteps,
+    stepper?._id,
+    selectedFilter,
+    setSearchParams,
+  ]);
+
   // When a target step id is set (by the navigator), focus that step after filteredSteps refresh
   useEffect(() => {
     if (!targetStepId) return;
     const idx = filteredSteps.findIndex(
-      (s) => String(s?._id) === String(targetStepId)
+      (s) => String(s?._id) === String(targetStepId),
     );
     if (idx !== -1) {
       setCurrentIndex(idx);
@@ -478,7 +514,7 @@ const Application = () => {
                   Next ▶
                 </button>
 
-                {user?.role === "admin" && (
+                {canAssignApplicationSteps && (
                   <button
                     onClick={() => setAssignModal(true)}
                     className="px-3 py-2 ml-2 rounded-md text-sm font-semibold bg-green-600 text-white hover:bg-green-700"

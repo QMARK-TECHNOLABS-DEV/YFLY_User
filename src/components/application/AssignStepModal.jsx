@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { IoCloseCircle } from "react-icons/io5";
+import { useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import {
@@ -21,6 +22,7 @@ const AssignStepModal = ({
   categoriesMapping = null,
 }) => {
   const axios = useAxiosPrivate();
+  const location = useLocation();
   const user = useSelector((state) => state?.auth?.userInfo);
 
   const [category, setCategory] = useState("");
@@ -212,7 +214,7 @@ const AssignStepModal = ({
   }, [derivedMapping, category, steps]);
 
   const filteredSteps = stepsInCategory.filter((s) =>
-    (s?.name || "").toLowerCase().includes((search || "").toLowerCase())
+    (s?.name || "").toLowerCase().includes((search || "").toLowerCase()),
   );
 
   useEffect(() => {
@@ -256,11 +258,11 @@ const AssignStepModal = ({
 
     // Prevent assigning a step that's already completed
     const selectedStep = (steps || []).find(
-      (s) => String(s._id) === String(stepId)
+      (s) => String(s._id) === String(stepId),
     );
     if (selectedStep?.status === "completed") {
       toast.warning(
-        "Selected step is already completed and cannot be assigned"
+        "Selected step is already completed and cannot be assigned",
       );
       return;
     }
@@ -280,9 +282,9 @@ const AssignStepModal = ({
           title: `New Task assigned by ${user?.name}`,
           body: `Step: ${stepName}`,
           notificationType: "assign",
-          route: `/applications/stepper/${
-            stepperData?._id || applicationData?._id
-          }`,
+          route: `${location.pathname}?stepNumber=${encodeURIComponent(
+            stepId,
+          )}`,
         };
         await axiosPrivate.post(notificationRoute, notifPayload);
       } catch (notifErr) {
