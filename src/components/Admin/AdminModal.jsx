@@ -46,7 +46,7 @@ const AdminModal = ({ setModal, applicationData, cb, stepNumber }) => {
   const onChangeCata = async (e) => {
     try {
       const response = await axios.get(
-        `${getEmployeesRoute}?department=${e.target.value}`
+        `${getEmployeesRoute}?department=${e.target.value}`,
       );
       setEmployee(response?.data);
     } catch (error) {
@@ -69,21 +69,22 @@ const AdminModal = ({ setModal, applicationData, cb, stepNumber }) => {
       if (response?.status === 200) {
         toast.success(response?.data?.msg);
 
-        const step =
-          applicationData?.steps?.find(
-            (item) => String(item?._id) === formData?.stepNumber
-          ) || "NA";
+        const step = applicationData?.steps?.find(
+          (item) => String(item?._id) === String(formData?.stepNumber),
+        );
 
         const notificationData = {
           userId: formData?.employeeId,
           title: `New Task assigned by ${userInfo?.name}`,
-          body: `Step : ${step?.name} `,
+          body: `Step : ${step?.name || formData?.stepNumber || "Unknown step"}`,
           notificationType: "assign",
-          route: path?.pathname,
+          route: `${path?.pathname}?stepNumber=${encodeURIComponent(
+            formData?.stepNumber,
+          )}`,
         };
         const notificationSend = await axiosPrivate.post(
           notification,
-          notificationData
+          notificationData,
         );
 
         console.log(notificationSend);

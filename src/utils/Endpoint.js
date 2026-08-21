@@ -43,6 +43,7 @@ export const getAEmployeeData = "/api/employee/get";
 
 //Get Assigned works;
 export const getAssignedWorksRoute = "/api/employee/get-assigned-works";
+export const workTimerRoute = "/api/employee/work-timer";
 
 // Get Route to refresh token;
 export const refreshTokenRoute = "/api/auth/refresh-token";
